@@ -10,16 +10,34 @@ datasource db {
   provider = "postgresql"
 }
 
+// ── Enums ──────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  USER
+
+  @@map("user_role")
+}
+
+// ── Auth Models (Better Auth Compatible) ──────────────────────────────────
+
 model User {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // SMART-SDLP Custom Fields
+  role      UserRole @default(USER)
+  nip       String?  @unique
+  jabatan   String?
+  unitKerja String?
+
+  sessions Session[]
+  accounts Account[]
 
   @@map("user")
 }
@@ -36,6 +54,7 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("session")
+  @@index([userId])
 }
 
 model Account {
@@ -47,14 +66,18 @@ model Account {
   accessToken           String?
   refreshToken          String?
   idToken               String?
-  accessTokenExpiresAt DateTime?
+  accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  issuer String
+
   @@map("account")
+  @@unique([issuer, accountId], map: "account_issuer_accountId_uidx")
+  @@index([userId])
 }
 
 model Verification {
@@ -66,4 +89,5 @@ model Verification {
   updatedAt  DateTime? @updatedAt
 
   @@map("verification")
+  @@index([identifier])
 }

@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:generate": "bunx prisma generate",
+    "db:push": "bunx prisma db push",
+    "db:seed": "bun run prisma/seed.ts",
+    "db:studio": "bunx prisma studio"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -44,6 +48,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
+    "tsx": "^4.19.4",
     "prisma": "7.10.0",
     "tailwindcss": "^4",
     "typescript": "^5"
