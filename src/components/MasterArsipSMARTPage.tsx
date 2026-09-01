@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { smartArsipData, auditLogData } from "@/data/mockData";
 import { SmartArchiveItem } from "@/types";
@@ -8,7 +10,9 @@ interface MasterArsipSMARTPageProps {
   onNavigateToAudit?: () => void;
 }
 
-export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPageProps) {
+export function MasterArsipSMARTPage({
+  onNavigateToAudit,
+}: MasterArsipSMARTPageProps) {
   const [items, setItems] = useState<SmartArchiveItem[]>(smartArsipData);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua Status");
@@ -16,7 +20,9 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
 
   // Deletion Modal
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<SmartArchiveItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<SmartArchiveItem | null>(
+    null,
+  );
   const [deleteReason, setDeleteReason] = useState("");
   const [deleteNotification, setDeleteNotification] = useState(true);
   const [successToast, setSuccessToast] = useState("");
@@ -48,7 +54,9 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
     });
 
     setDeleteModalOpen(false);
-    setSuccessToast(`Laporan "${selectedItem.nama}" berhasil dihapus dan dicatat dalam Log Audit.`);
+    setSuccessToast(
+      `Laporan "${selectedItem.nama}" berhasil dihapus dan dicatat dalam Log Audit.`,
+    );
     setTimeout(() => setSuccessToast(""), 4000);
   };
 
@@ -57,8 +65,10 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
       item.nama.toLowerCase().includes(search.toLowerCase()) ||
       item.kode.toLowerCase().includes(search.toLowerCase()) ||
       item.uploader.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === "Semua Status" || item.status === filterStatus;
-    const matchBulan = filterBulan === "Semua Periode" || item.periode === filterBulan;
+    const matchStatus =
+      filterStatus === "Semua Status" || item.status === filterStatus;
+    const matchBulan =
+      filterBulan === "Semua Periode" || item.periode === filterBulan;
     return matchSearch && matchStatus && matchBulan;
   });
 
@@ -75,7 +85,8 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
             Master Pengarsipan Laporan SMART
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Repositori terpusat berkas laporan realisasi SMART yang diunggah oleh seluruh PJ Kegiatan
+            Repositori terpusat berkas laporan realisasi SMART yang diunggah
+            oleh seluruh PJ Kegiatan
           </p>
         </div>
         {onNavigateToAudit && (
@@ -83,7 +94,14 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
             onClick={onNavigateToAudit}
             className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-xs font-semibold transition cursor-pointer"
           >
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width={14}
+              height={14}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d={Icons.shield} />
             </svg>
             Lihat Log Audit Penghapusan
@@ -95,14 +113,35 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
         <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg text-xs font-semibold flex items-center justify-between animate-in fade-in">
           <div className="flex items-center gap-2">
             <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">
-              <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width={12}
+                height={12}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </span>
             <span>{successToast}</span>
           </div>
-          <button onClick={() => setSuccessToast("")} className="text-emerald-900 hover:text-emerald-950 p-1 cursor-pointer">
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <button
+            onClick={() => setSuccessToast("")}
+            className="text-emerald-900 hover:text-emerald-950 p-1 cursor-pointer"
+          >
+            <svg
+              width={14}
+              height={14}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -144,7 +183,14 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
               className="w-full h-9 pl-9 pr-3 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-600"
             />
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width={14}
+                height={14}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d={Icons.search} />
               </svg>
             </span>
@@ -190,22 +236,37 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
             <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
               {filtered.map((item, idx) => (
                 <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                  <td className="py-2.5 px-3 text-slate-400 font-semibold">{idx + 1}</td>
+                  <td className="py-2.5 px-3 text-slate-400 font-semibold">
+                    {idx + 1}
+                  </td>
                   <td className="py-2.5 px-3 max-w-[260px]">
                     <span className="font-mono text-[11px] font-semibold text-emerald-800 block">
                       {item.kode}
                     </span>
-                    <span className="font-medium text-slate-900">{item.nama}</span>
+                    <span className="font-medium text-slate-900">
+                      {item.nama}
+                    </span>
                   </td>
-                  <td className="py-2.5 px-3 font-medium whitespace-nowrap">{item.periode}</td>
+                  <td className="py-2.5 px-3 font-medium whitespace-nowrap">
+                    {item.periode}
+                  </td>
                   <td className="py-2.5 px-3">
-                    <Badge text={item.jenis} color={item.jenis === "APBN" ? "blue" : "gold"} />
+                    <Badge
+                      text={item.jenis}
+                      color={item.jenis === "APBN" ? "blue" : "gold"}
+                    />
                   </td>
                   <td className="py-2.5 px-3 whitespace-nowrap">
-                    <span className="font-semibold text-slate-800 block">{item.uploader}</span>
-                    <span className="text-[11px] text-slate-400">{item.email}</span>
+                    <span className="font-semibold text-slate-800 block">
+                      {item.uploader}
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      {item.email}
+                    </span>
                   </td>
-                  <td className="py-2.5 px-3 text-slate-500 whitespace-nowrap">{item.waktu}</td>
+                  <td className="py-2.5 px-3 text-slate-500 whitespace-nowrap">
+                    {item.waktu}
+                  </td>
                   <td className="py-2.5 px-3 text-center">
                     <Badge
                       text={item.status}
@@ -218,10 +279,19 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
                         <>
                           <button
                             title="Unduh Berkas SMART"
-                            onClick={() => alert(`Mengunduh laporan SMART ${item.nama}...`)}
+                            onClick={() =>
+                              alert(`Mengunduh laporan SMART ${item.nama}...`)
+                            }
                             className="p-1 text-slate-500 hover:text-emerald-700 rounded hover:bg-slate-100 cursor-pointer"
                           >
-                            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              width={14}
+                              height={14}
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <path d={Icons.download} />
                             </svg>
                           </button>
@@ -230,14 +300,25 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
                             onClick={() => openDeleteModal(item)}
                             className="p-1 text-slate-500 hover:text-rose-700 rounded hover:bg-slate-100 cursor-pointer"
                           >
-                            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg
+                              width={14}
+                              height={14}
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <path d={Icons.trash} />
                             </svg>
                           </button>
                         </>
                       ) : (
                         <button
-                          onClick={() => alert(`Mengirimkan email pengingat kepada ${item.uploader} (${item.email})...`)}
+                          onClick={() =>
+                            alert(
+                              `Mengirimkan email pengingat kepada ${item.uploader} (${item.email})...`,
+                            )
+                          }
                           className="px-2 py-1 text-[11px] font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 rounded border border-amber-200 transition cursor-pointer"
                         >
                           Ingatkan PJ
@@ -258,13 +339,34 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
           <div className="bg-white rounded-lg shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-150">
             <div className="p-4 border-b border-rose-100 flex items-center justify-between bg-rose-50/70">
               <div className="flex items-center gap-2 text-rose-800">
-                <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width={18}
+                  height={18}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d={Icons.trash} />
                 </svg>
-                <h3 className="text-sm font-bold">Hapus Laporan SMART (Audit Trail Aktif)</h3>
+                <h3 className="text-sm font-bold">
+                  Hapus Laporan SMART (Audit Trail Aktif)
+                </h3>
               </div>
-              <button onClick={() => setDeleteModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
-                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+              >
+                <svg
+                  width={16}
+                  height={16}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -273,18 +375,24 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
 
             <div className="p-5 space-y-4 text-xs">
               <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-1">
-                <p className="font-semibold text-slate-800">{selectedItem.nama}</p>
-                <p className="text-slate-500">
-                  Kode: <span className="font-mono">{selectedItem.kode}</span> · Periode: {selectedItem.periode}
+                <p className="font-semibold text-slate-800">
+                  {selectedItem.nama}
                 </p>
                 <p className="text-slate-500">
-                  Pemilik Data: <span className="font-semibold">{selectedItem.uploader}</span> ({selectedItem.email})
+                  Kode: <span className="font-mono">{selectedItem.kode}</span> ·
+                  Periode: {selectedItem.periode}
+                </p>
+                <p className="text-slate-500">
+                  Pemilik Data:{" "}
+                  <span className="font-semibold">{selectedItem.uploader}</span>{" "}
+                  ({selectedItem.email})
                 </p>
               </div>
 
               <div className="space-y-1.5">
                 <label className="block font-bold text-slate-800">
-                  Alasan Penghapusan Dokumen <span className="text-rose-600">* Wajib Diisi</span>
+                  Alasan Penghapusan Dokumen{" "}
+                  <span className="text-rose-600">* Wajib Diisi</span>
                 </label>
                 <textarea
                   required
@@ -295,7 +403,8 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
                   className="w-full p-2.5 text-xs bg-white border border-slate-300 rounded-md text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-600"
                 />
                 <p className="text-[11px] text-slate-400">
-                  Alasan ini akan disimpan permanen di Log Audit dan dikirimkan ke email PJ terkait.
+                  Alasan ini akan disimpan permanen di Log Audit dan dikirimkan
+                  ke email PJ terkait.
                 </p>
               </div>
 
@@ -306,7 +415,8 @@ export function MasterArsipSMARTPage({ onNavigateToAudit }: MasterArsipSMARTPage
                   onChange={(e) => setDeleteNotification(e.target.checked)}
                   className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                 />
-                Kirimkan email notifikasi otomatis beserta alasan penghapusan ke PJ Kegiatan
+                Kirimkan email notifikasi otomatis beserta alasan penghapusan ke
+                PJ Kegiatan
               </label>
 
               <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-200">

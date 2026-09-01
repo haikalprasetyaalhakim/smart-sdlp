@@ -5,7 +5,12 @@ export interface Activity {
   kode: string;
   nama: string;
   jenis: "APBN" | "NON-APBN";
-  programCategory?: "Layanan Perkantoran" | "Fasilitas Kinerja" | "Klinik Modernisasi/KMP" | "Alat & Sarana" | string;
+  programCategory?:
+    | "Layanan Perkantoran"
+    | "Fasilitas Kinerja"
+    | "Klinik Modernisasi/KMP"
+    | "Alat & Sarana"
+    | string;
   pagu: number;
   realisasi: number;
   fisik?: number;
@@ -78,5 +83,6 @@ export interface MenuItem {
   id: string;
   label: string;
   icon: string;
+  path: string;
   badge?: string;
 }

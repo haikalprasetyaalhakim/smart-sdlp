@@ -4,10 +4,7 @@ import React, { useState } from "react";
 import { Activity } from "@/types";
 import { fmtRupiah, Icons } from "@/utils/formatters";
 import { KpiCard, Badge, ProgressBar } from "./KpiCard";
-import {
-  barData,
-  lineDataFull,
-} from "@/data/mockData";
+import { barData, lineDataFull } from "@/data/mockData";
 import { Top5LowSerapanWidget } from "./Top5LowSerapanWidget";
 import { DistribusiPaguWidget } from "./DistribusiPaguWidget";
 import {
@@ -25,13 +22,16 @@ import {
 
 interface AdminDashboardProps {
   activities: Activity[];
-  onNavigate: (menu: string) => void;
 }
 
-export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<"serapan" | "trend" | "kegiatan">("serapan");
+export function AdminDashboard({ activities }: AdminDashboardProps) {
+  const [activeTab, setActiveTab] = useState<"serapan" | "trend" | "kegiatan">(
+    "serapan",
+  );
   const [search, setSearch] = useState("");
-  const [filterJenis, setFilterJenis] = useState<"ALL" | "APBN" | "NON-APBN">("ALL");
+  const [filterJenis, setFilterJenis] = useState<"ALL" | "APBN" | "NON-APBN">(
+    "ALL",
+  );
 
   const totalPagu = activities.reduce((a, b) => a + b.pagu, 0);
   const totalReal = activities.reduce((a, b) => a + b.realisasi, 0);
@@ -58,24 +58,33 @@ export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) 
             Executive Dashboard Monitoring Anggaran SMART
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Balai Besar Perakitan dan Modernisasi Sumber Daya Lahan Pertanian · Tahun Anggaran 2026
+            Balai Besar Perakitan dan Modernisasi Sumber Daya Lahan Pertanian ·
+            Tahun Anggaran 2026
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => onNavigate("master")}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-xs font-semibold transition cursor-pointer"
-          >
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-xs font-semibold transition cursor-pointer">
+            <svg
+              width={14}
+              height={14}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d={Icons.users} />
             </svg>
             Kelola Kegiatan
           </button>
-          <button
-            onClick={() => onNavigate("cetak")}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-md text-xs font-semibold shadow-xs transition cursor-pointer"
-          >
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-md text-xs font-semibold shadow-xs transition cursor-pointer">
+            <svg
+              width={14}
+              height={14}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d={Icons.print} />
             </svg>
             Cetak Dokumen &amp; Laporan
@@ -156,7 +165,8 @@ export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) 
                     </span>
                   </div>
                   <p className="text-xs text-slate-500">
-                    Perbandingan nominal belanja anggaran bulanan (dalam Miliar Rp)
+                    Perbandingan nominal belanja anggaran bulanan (dalam Miliar
+                    Rp)
                   </p>
                 </div>
 
@@ -166,7 +176,11 @@ export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) 
                       data={barData}
                       margin={{ top: 24, right: 16, left: -10, bottom: 0 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke="#e2e8f0"
+                        vertical={false}
+                      />
                       <XAxis
                         dataKey="name"
                         tick={{ fontSize: 12, fill: "#475569" }}
@@ -174,7 +188,11 @@ export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) 
                         tickLine={false}
                       />
                       <YAxis
-                        domain={[0, (dataMax: number) => Math.ceil((dataMax * 1.25) / 500000000) * 500000000]}
+                        domain={[
+                          0,
+                          (dataMax: number) =>
+                            Math.ceil((dataMax * 1.25) / 500000000) * 500000000,
+                        ]}
                         tick={{ fontSize: 11, fill: "#475569" }}
                         axisLine={false}
                         tickLine={false}
@@ -220,7 +238,7 @@ export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) 
               </div>
 
               <div className="lg:col-span-5 xl:col-span-4 h-full">
-                <DistribusiPaguWidget activities={activities} onNavigate={onNavigate} />
+                <DistribusiPaguWidget activities={activities} />
               </div>
             </div>
           </div>
@@ -245,15 +263,23 @@ export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) 
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 mb-4">
-                    Pemantauan kurva S realisasi kumulatif bulanan dibandingkan target rencana kerja.
+                    Pemantauan kurva S realisasi kumulatif bulanan dibandingkan
+                    target rencana kerja.
                   </p>
                 </div>
                 <div className="h-64 sm:h-72 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={lineDataFull} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
+                    <LineChart
+                      data={lineDataFull}
+                      margin={{ top: 10, right: 15, left: -20, bottom: 0 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                       <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} unit="%" domain={[0, 100]} />
+                      <YAxis
+                        tick={{ fontSize: 11 }}
+                        unit="%"
+                        domain={[0, 100]}
+                      />
                       <Tooltip formatter={(val: any) => [`${val}%`, ""]} />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Line
@@ -278,7 +304,7 @@ export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) 
                 </div>
               </div>
 
-              <Top5LowSerapanWidget onNavigate={onNavigate} />
+              <Top5LowSerapanWidget />
             </div>
           </div>
         )}
@@ -295,7 +321,14 @@ export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) 
                   className="w-full h-9 pl-9 pr-3 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-600"
                 />
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width={14}
+                    height={14}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d={Icons.search} />
                   </svg>
                 </span>
@@ -331,26 +364,39 @@ export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) 
                     <th className="py-2.5 px-3 text-right">Pagu</th>
                     <th className="py-2.5 px-3 text-right">Realisasi</th>
                     <th className="py-2.5 px-3">Serapan</th>
-                    <th className="py-2.5 px-3 text-center">Status Pelaporan</th>
+                    <th className="py-2.5 px-3 text-center">
+                      Status Pelaporan
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
                   {filtered.map((item, idx) => {
-                    const pct = item.pagu > 0 ? (item.realisasi / item.pagu) * 100 : 0;
+                    const pct =
+                      item.pagu > 0 ? (item.realisasi / item.pagu) * 100 : 0;
                     return (
-                      <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                        <td className="py-2.5 px-3 text-slate-400 font-semibold">{idx + 1}</td>
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-50/80 transition"
+                      >
+                        <td className="py-2.5 px-3 text-slate-400 font-semibold">
+                          {idx + 1}
+                        </td>
                         <td className="py-2.5 px-3 max-w-[240px]">
                           <span className="text-[11px] font-semibold text-emerald-800 font-mono block">
                             {item.kode}
                           </span>
-                          <span className="font-medium text-slate-900 line-clamp-1">{item.nama}</span>
+                          <span className="font-medium text-slate-900 line-clamp-1">
+                            {item.nama}
+                          </span>
                         </td>
                         <td className="py-2.5 px-3 font-medium text-slate-800 whitespace-nowrap">
                           {item.pj || "Budi Santoso"}
                         </td>
                         <td className="py-2.5 px-3">
-                          <Badge text={item.jenis} color={item.jenis === "APBN" ? "blue" : "gold"} />
+                          <Badge
+                            text={item.jenis}
+                            color={item.jenis === "APBN" ? "blue" : "gold"}
+                          />
                         </td>
                         <td className="py-2.5 px-3 text-right font-medium whitespace-nowrap">
                           {fmtRupiah(item.pagu)}
@@ -363,7 +409,9 @@ export function AdminDashboard({ activities, onNavigate }: AdminDashboardProps) 
                         </td>
                         <td className="py-2.5 px-3 text-center">
                           <Badge
-                            text={item.sudahLapor ? "Sudah Lapor" : "Belum Lapor"}
+                            text={
+                              item.sudahLapor ? "Sudah Lapor" : "Belum Lapor"
+                            }
                             color={item.sudahLapor ? "green" : "red"}
                           />
                         </td>
