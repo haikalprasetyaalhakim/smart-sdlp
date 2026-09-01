@@ -1,194 +1,122 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Role, UserProfile, Activity } from "@/types";
-import { userActivities, allKegiatan } from "@/data/mockData";
-import { Sidebar } from "@/components/Sidebar";
-import { TopHeader } from "@/components/TopHeader";
-import { LoginPage } from "@/components/LoginPage";
-import { UserDashboard } from "@/components/UserDashboard";
-import { AdminDashboard } from "@/components/AdminDashboard";
-import { InputLaporanPage } from "@/components/InputLaporanPage";
-import { RepositoriPage } from "@/components/RepositoriPage";
+import { AdminDashboard } from "@/components/admin-dashboard";
 import { CetakLaporanPage } from "@/components/CetakLaporanPage";
+import { InputLaporanPage } from "@/components/InputLaporanPage";
+import { LogAuditPage } from "@/components/LogAuditPage";
 import { ManajemenKegiatanPage } from "@/components/ManajemenKegiatanPage";
 import { MasterArsipSMARTPage } from "@/components/MasterArsipSMARTPage";
-import { LogAuditPage } from "@/components/LogAuditPage";
+import { RepositoriPage } from "@/components/RepositoriPage";
+import { Sidebar } from "@/components/Sidebar";
+import { UserDashboard } from "@/components/UserDashboard";
+import { allKegiatan, userActivities } from "@/data/mockData";
+import { signOut, useSession } from "@/lib/auth-client";
+import type { Activity } from "@/types";
+import { Role, UserProfile } from "@/types";
+import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const initialAdminProfile: UserProfile = {
-  nama: "Admin Pusdatin",
-  nip: "19820514 200604 1 002",
-  email: "admin.pusdatin@pertanian.go.id",
-  jabatan: "Pranata Komputer Ahli Muda",
-  unitKerja: "Pusat Data dan Sistem Informasi Pertanian",
-  foto: "",
-  role: "admin",
-};
-
-const initialUserProfile: UserProfile = {
-  nama: "Ir. Budi Santoso, M.Si.",
-  nip: "19780412 200312 1 001",
-  email: "budi.santoso@pertanian.go.id",
-  jabatan: "Penanggung Jawab (PJ) Kegiatan",
-  unitKerja:
-    "Balai Besar Perakitan dan Modernisasi Sumber Daya Lahan Pertanian",
-  foto: "",
-  role: "user",
-};
-
-const AUTH_STORAGE_KEY = "smart_auth_session";
-
-interface StoredAuthSession {
-  isLoggedIn: boolean;
-  role: Role;
-  userProfile: UserProfile;
-  activeMenu: string;
+// ── Helper: map Better Auth user → UserProfile ──────────────────────────────
+function mapSessionToProfile(user: {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  role?: string;
+  nip?: string | null;
+  jabatan?: string | null;
+  unitKerja?: string | null;
+}): UserProfile {
+  return {
+    nama: user.name,
+    nip: user.nip ?? "",
+    email: user.email,
+    jabatan: user.jabatan ?? "",
+    unitKerja:
+      user.unitKerja ??
+      "Balai Besar Perakitan dan Modernisasi Sumber Daya Lahan Pertanian",
+    foto: user.image ?? "",
+    role: (user.role?.toLowerCase() === "admin" ? "admin" : "user") as Role,
+  };
 }
 
+// // ── Loading Screen ─────────────────────────────────────────────────────────
+// function LoadingScreen({ message = "Memuat Sistem SMART..." }: { message?: string }) {
+//   return (
+//     <div className="flex h-screen w-screen items-center justify-center bg-slate-50 text-slate-500 font-sans">
+//       <div className="flex items-center gap-2 text-xs font-semibold">
+//         <svg className="animate-spin h-4 w-4 text-emerald-800" viewBox="0 0 24 24" fill="none">
+//           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+//           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+//         </svg>
+//         {message}
+//       </div>
+//     </div>
+//   );
+// }
+
 export default function Home() {
-  const [mounted, setMounted] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [role, setRole] = useState<Role>("admin");
-  const [activeMenu, setActiveMenu] = useState<string>("exec");
+  const { data: session, isPending } = useSession();
+
+  const [activeMenu, setActiveMenu] = useState<string>("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activities, setActivities] = useState<Activity[]>(allKegiatan);
-  const [userProfile, setUserProfile] = useState<UserProfile>(initialAdminProfile);
 
+  // Derive role from session
+  const role: Role =
+    (session?.user?.role as string)?.toLowerCase() === "admin"
+      ? "admin"
+      : "user";
+
+  // Set default menu per role when session changes
   useEffect(() => {
-    setMounted(true);
-    try {
-      const saved = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (saved) {
-        const parsed: StoredAuthSession = JSON.parse(saved);
-        if (parsed.isLoggedIn) {
-          setIsLoggedIn(true);
-          if (parsed.role) setRole(parsed.role);
-          if (parsed.activeMenu) setActiveMenu(parsed.activeMenu);
-          if (parsed.userProfile) setUserProfile(parsed.userProfile);
-        }
-      }
-    } catch {
-      // ignore parse error
+    if (session?.user) {
+      const defaultMenu = role === "admin" ? "exec" : "dashboard";
+      setActiveMenu((prev) => prev || defaultMenu);
     }
-  }, []);
+  }, [session?.user, role]);
 
-  const saveSession = (
-    loggedIn: boolean,
-    userRole: Role,
-    profile: UserProfile,
-    menu: string,
-  ) => {
-    try {
-      if (loggedIn) {
-        const sessionData: StoredAuthSession = {
-          isLoggedIn: true,
-          role: userRole,
-          userProfile: profile,
-          activeMenu: menu,
-        };
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(sessionData));
-      } else {
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-      }
-    } catch {
-      // ignore
-    }
+  // ── Handlers ─────────────────────────────────────────────────────────────
+
+  const handleLogout = async () => {
+    await signOut();
+    setActiveMenu("");
   };
 
-  const handleRoleSwitch = (newRole: Role) => {
-    const nextProfile =
-      newRole === "admin" ? initialAdminProfile : initialUserProfile;
-    let nextMenu = activeMenu;
-
-    if (newRole === "admin") {
-      if (["dashboard", "input", "arsip", "unduh"].includes(activeMenu)) {
-        nextMenu = "exec";
-      }
-    } else {
-      if (
-        [
-          "exec",
-          "master",
-          "repositori",
-          "arsip-sp2d",
-          "log-audit",
-          "cetak",
-        ].includes(activeMenu)
-      ) {
-        nextMenu = "dashboard";
-      }
-    }
-
-    setRole(newRole);
-    setUserProfile(nextProfile);
-    setActiveMenu(nextMenu);
-    saveSession(true, newRole, nextProfile, nextMenu);
-  };
-
-  const handleLogin = (userRole: Role, email?: string) => {
-    const targetProfile =
-      userRole === "admin"
-        ? { ...initialAdminProfile }
-        : { ...initialUserProfile };
-    if (email) {
-      targetProfile.email = email;
-    }
-
-    const targetMenu = userRole === "admin" ? "exec" : "dashboard";
-
-    setRole(userRole);
-    setUserProfile(targetProfile);
-    setActiveMenu(targetMenu);
-    setIsLoggedIn(true);
-
-    saveSession(true, userRole, targetProfile, targetMenu);
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    saveSession(false, "admin", initialAdminProfile, "exec");
-  };
-
-  const handleMenuChange = (newMenu: string) => {
-    let target = newMenu;
+  const handleMenuChange = (menu: string) => {
+    // Enforce role-based menu access
     if (role === "user") {
-      const allowedUserMenus = ["dashboard", "input", "arsip", "unduh"];
-      if (!allowedUserMenus.includes(target)) {
-        target = "dashboard";
-      }
+      const allowedUserMenus = ["dashboard", "input"];
+      if (!allowedUserMenus.includes(menu)) return;
     }
-    setActiveMenu(target);
-    saveSession(true, role, userProfile, target);
+    setActiveMenu(menu);
   };
 
-  const handleProfileUpdate = (updatedProfile: UserProfile) => {
-    setUserProfile(updatedProfile);
-    saveSession(true, role, updatedProfile, activeMenu);
-  };
-
-  if (!mounted) {
+  // ── Render Guards ─────────────────────────────────────────────────────────
+  if (isPending) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-slate-50 text-slate-500 font-sans">
-        <div className="flex items-center gap-2 text-xs font-semibold">
-          <svg className="animate-spin h-4 w-4 text-emerald-800" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          Memuat Sistem SMART...
-        </div>
+      <div className="flex h-screen w-screen items-center justify-center bg-slate-50 text-slate-500 text-sm">
+        Memuat sesi...
       </div>
     );
   }
 
-  if (!isLoggedIn) {
-    return <LoginPage onLogin={handleLogin} />;
+  if (!session) {
+    redirect("/login");
+    return null; // safety, redirect() throws internally di Next.js
   }
+
+  // if (!userProfile) {
+  //   return <LoadingScreen message="Menyiapkan profil pengguna..." />;
+  // }
+
+  const currentMenu = activeMenu || (role === "admin" ? "exec" : "dashboard");
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-slate-50 text-slate-800 font-sans antialiased">
       <Sidebar
         role={role}
-        activeMenu={activeMenu}
+        activeMenu={currentMenu}
         onMenuChange={handleMenuChange}
         mobileOpen={mobileMenuOpen}
         onCloseMobile={() => setMobileMenuOpen(false)}
@@ -196,52 +124,51 @@ export default function Home() {
       />
 
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
-        <TopHeader
+        {/* <TopHeader
           role={role}
-          activeMenu={activeMenu}
+          activeMenu={currentMenu}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
-          onRoleSwitch={handleRoleSwitch}
           onNavigate={handleMenuChange}
           onLogout={handleLogout}
           userProfile={userProfile}
           onUpdateProfile={handleProfileUpdate}
-        />
+        /> */}
 
-        <main className="flex-1 overflow-y-auto p-3.5 sm:p-5 max-w-[1400px] w-full mx-auto">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-5 max-w-350 w-full mx-auto">
           {role === "user" && (
             <>
-              {activeMenu === "dashboard" && (
+              {currentMenu === "dashboard" && (
                 <UserDashboard
                   activities={userActivities}
-                  onNavigate={setActiveMenu}
+                  onNavigate={handleMenuChange}
                 />
               )}
-              {activeMenu === "input" && <InputLaporanPage />}
+              {currentMenu === "input" && <InputLaporanPage />}
             </>
           )}
 
           {role === "admin" && (
             <>
-              {activeMenu === "exec" && (
+              {currentMenu === "exec" && (
                 <AdminDashboard
                   activities={activities}
-                  onNavigate={setActiveMenu}
+                  onNavigate={handleMenuChange}
                 />
               )}
-              {activeMenu === "master" && (
+              {currentMenu === "master" && (
                 <ManajemenKegiatanPage
                   activities={activities}
                   onUpdateActivities={setActivities}
                 />
               )}
-              {activeMenu === "repositori" && <RepositoriPage />}
-              {activeMenu === "arsip-sp2d" && (
+              {currentMenu === "repositori" && <RepositoriPage />}
+              {currentMenu === "arsip-sp2d" && (
                 <MasterArsipSMARTPage
-                  onNavigateToAudit={() => setActiveMenu("log-audit")}
+                  onNavigateToAudit={() => handleMenuChange("log-audit")}
                 />
               )}
-              {activeMenu === "log-audit" && <LogAuditPage />}
-              {activeMenu === "cetak" && <CetakLaporanPage />}
+              {currentMenu === "log-audit" && <LogAuditPage />}
+              {currentMenu === "cetak" && <CetakLaporanPage />}
             </>
           )}
         </main>

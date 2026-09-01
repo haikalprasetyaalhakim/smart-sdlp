@@ -38,6 +38,7 @@ export type AccountMinAggregateOutputType = {
   password: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  issuer: string | null
 }
 
 export type AccountMaxAggregateOutputType = {
@@ -54,6 +55,7 @@ export type AccountMaxAggregateOutputType = {
   password: string | null
   createdAt: Date | null
   updatedAt: Date | null
+  issuer: string | null
 }
 
 export type AccountCountAggregateOutputType = {
@@ -70,6 +72,7 @@ export type AccountCountAggregateOutputType = {
   password: number
   createdAt: number
   updatedAt: number
+  issuer: number
   _all: number
 }
 
@@ -88,6 +91,7 @@ export type AccountMinAggregateInputType = {
   password?: true
   createdAt?: true
   updatedAt?: true
+  issuer?: true
 }
 
 export type AccountMaxAggregateInputType = {
@@ -104,6 +108,7 @@ export type AccountMaxAggregateInputType = {
   password?: true
   createdAt?: true
   updatedAt?: true
+  issuer?: true
 }
 
 export type AccountCountAggregateInputType = {
@@ -120,6 +125,7 @@ export type AccountCountAggregateInputType = {
   password?: true
   createdAt?: true
   updatedAt?: true
+  issuer?: true
   _all?: true
 }
 
@@ -209,6 +215,7 @@ export type AccountGroupByOutputType = {
   password: string | null
   createdAt: Date
   updatedAt: Date
+  issuer: string
   _count: AccountCountAggregateOutputType | null
   _min: AccountMinAggregateOutputType | null
   _max: AccountMaxAggregateOutputType | null
@@ -246,6 +253,7 @@ export type AccountWhereInput = {
   password?: Prisma.StringNullableFilter<"Account"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Account"> | Date | string
+  issuer?: Prisma.StringFilter<"Account"> | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
@@ -263,11 +271,13 @@ export type AccountOrderByWithRelationInput = {
   password?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  issuer?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
 }
 
 export type AccountWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  issuer_accountId?: Prisma.AccountIssuerAccountIdCompoundUniqueInput
   AND?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
   OR?: Prisma.AccountWhereInput[]
   NOT?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
@@ -283,8 +293,9 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   password?: Prisma.StringNullableFilter<"Account"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Account"> | Date | string
+  issuer?: Prisma.StringFilter<"Account"> | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "id">
+}, "id" | "issuer_accountId">
 
 export type AccountOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -300,6 +311,7 @@ export type AccountOrderByWithAggregationInput = {
   password?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  issuer?: Prisma.SortOrder
   _count?: Prisma.AccountCountOrderByAggregateInput
   _max?: Prisma.AccountMaxOrderByAggregateInput
   _min?: Prisma.AccountMinOrderByAggregateInput
@@ -322,6 +334,7 @@ export type AccountScalarWhereWithAggregatesInput = {
   password?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Account"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Account"> | Date | string
+  issuer?: Prisma.StringWithAggregatesFilter<"Account"> | string
 }
 
 export type AccountCreateInput = {
@@ -337,6 +350,7 @@ export type AccountCreateInput = {
   password?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  issuer: string
   user: Prisma.UserCreateNestedOneWithoutAccountsInput
 }
 
@@ -354,6 +368,7 @@ export type AccountUncheckedCreateInput = {
   password?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  issuer: string
 }
 
 export type AccountUpdateInput = {
@@ -369,6 +384,7 @@ export type AccountUpdateInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  issuer?: Prisma.StringFieldUpdateOperationsInput | string
   user?: Prisma.UserUpdateOneRequiredWithoutAccountsNestedInput
 }
 
@@ -386,6 +402,7 @@ export type AccountUncheckedUpdateInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  issuer?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type AccountCreateManyInput = {
@@ -402,6 +419,7 @@ export type AccountCreateManyInput = {
   password?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  issuer: string
 }
 
 export type AccountUpdateManyMutationInput = {
@@ -417,6 +435,7 @@ export type AccountUpdateManyMutationInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  issuer?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type AccountUncheckedUpdateManyInput = {
@@ -433,6 +452,7 @@ export type AccountUncheckedUpdateManyInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  issuer?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type AccountListRelationFilter = {
@@ -443,6 +463,11 @@ export type AccountListRelationFilter = {
 
 export type AccountOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type AccountIssuerAccountIdCompoundUniqueInput = {
+  issuer: string
+  accountId: string
 }
 
 export type AccountCountOrderByAggregateInput = {
@@ -459,6 +484,7 @@ export type AccountCountOrderByAggregateInput = {
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  issuer?: Prisma.SortOrder
 }
 
 export type AccountMaxOrderByAggregateInput = {
@@ -475,6 +501,7 @@ export type AccountMaxOrderByAggregateInput = {
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  issuer?: Prisma.SortOrder
 }
 
 export type AccountMinOrderByAggregateInput = {
@@ -491,6 +518,7 @@ export type AccountMinOrderByAggregateInput = {
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  issuer?: Prisma.SortOrder
 }
 
 export type AccountCreateNestedManyWithoutUserInput = {
@@ -552,6 +580,7 @@ export type AccountCreateWithoutUserInput = {
   password?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  issuer: string
 }
 
 export type AccountUncheckedCreateWithoutUserInput = {
@@ -567,6 +596,7 @@ export type AccountUncheckedCreateWithoutUserInput = {
   password?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  issuer: string
 }
 
 export type AccountCreateOrConnectWithoutUserInput = {
@@ -612,6 +642,7 @@ export type AccountScalarWhereInput = {
   password?: Prisma.StringNullableFilter<"Account"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Account"> | Date | string
+  issuer?: Prisma.StringFilter<"Account"> | string
 }
 
 export type AccountCreateManyUserInput = {
@@ -627,6 +658,7 @@ export type AccountCreateManyUserInput = {
   password?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  issuer: string
 }
 
 export type AccountUpdateWithoutUserInput = {
@@ -642,6 +674,7 @@ export type AccountUpdateWithoutUserInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  issuer?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type AccountUncheckedUpdateWithoutUserInput = {
@@ -657,6 +690,7 @@ export type AccountUncheckedUpdateWithoutUserInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  issuer?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type AccountUncheckedUpdateManyWithoutUserInput = {
@@ -672,6 +706,7 @@ export type AccountUncheckedUpdateManyWithoutUserInput = {
   password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  issuer?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -690,6 +725,7 @@ export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   password?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  issuer?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["account"]>
 
@@ -707,6 +743,7 @@ export type AccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   password?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  issuer?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["account"]>
 
@@ -724,6 +761,7 @@ export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   password?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  issuer?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["account"]>
 
@@ -741,9 +779,10 @@ export type AccountSelectScalar = {
   password?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  issuer?: boolean
 }
 
-export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "accountId" | "providerId" | "userId" | "accessToken" | "refreshToken" | "idToken" | "accessTokenExpiresAt" | "refreshTokenExpiresAt" | "scope" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["account"]>
+export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "accountId" | "providerId" | "userId" | "accessToken" | "refreshToken" | "idToken" | "accessTokenExpiresAt" | "refreshTokenExpiresAt" | "scope" | "password" | "createdAt" | "updatedAt" | "issuer", ExtArgs["result"]["account"]>
 export type AccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -773,6 +812,7 @@ export type $AccountPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     password: string | null
     createdAt: Date
     updatedAt: Date
+    issuer: string
   }, ExtArgs["result"]["account"]>
   composites: {}
 }
@@ -1210,6 +1250,7 @@ export interface AccountFieldRefs {
   readonly password: Prisma.FieldRef<"Account", 'String'>
   readonly createdAt: Prisma.FieldRef<"Account", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Account", 'DateTime'>
+  readonly issuer: Prisma.FieldRef<"Account", 'String'>
 }
     
 
