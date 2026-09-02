@@ -128,5 +128,6 @@ model Kegiatan {
   updatedAt DateTime @updatedAt
 
   @@index([pjId])
+  @@index([kode])
   @@map("kegiatan")
 }
