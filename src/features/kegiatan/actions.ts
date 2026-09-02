@@ -234,3 +234,41 @@ export async function deleteKegiatan(
 
   return { success: true, deletedId: id };
 }
+
+type ToggleWajibResult =
+  | { success: true; id: string; wajib: boolean }
+  | { success: false; error: string };
+
+export async function toggleWajibLapor(
+  id: string,
+  wajib: boolean,
+): Promise<ToggleWajibResult> {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session) {
+    return { success: false, error: "Sesi tidak valid, silakan login ulang." };
+  }
+  if (session.user.role?.toLowerCase() !== "admin") {
+    return {
+      success: false,
+      error: "Hanya admin yang bisa mengubah status wajib lapor.",
+    };
+  }
+
+  const target = await prisma.kegiatan.findUnique({ where: { id } });
+  if (!target) {
+    return {
+      success: false,
+      error: "Kegiatan tidak ditemukan (mungkin sudah dihapus).",
+    };
+  }
+
+  await prisma.kegiatan.update({
+    where: { id },
+    data: { wajib },
+  });
+
+  revalidatePath("/admin/master");
+
+  return { success: true, id, wajib };
+}

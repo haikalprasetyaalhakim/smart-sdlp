@@ -14,6 +14,7 @@ import {
 import {
   createKegiatan,
   deleteKegiatan,
+  toggleWajibLapor,
   updateKegiatan,
 } from "@/features/kegiatan/actions";
 import { fmtRupiah, Icons } from "@/utils/formatters";
@@ -24,6 +25,7 @@ import {
 } from "@/utils/programCategorization";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 
 type KegiatanFromDb = {
   id: string;
@@ -54,6 +56,13 @@ interface ManajemenKegiatanPageProps {
   sort: string;
   order: "asc" | "desc";
   pjOptions: PjOption[];
+  wajibLaporData: KegiatanFromDb[];
+  wajibPage: number;
+  wajibPageSize: number;
+  wajibTotal: number;
+  totalWajibCount: number;
+  sudahLaporCount: number;
+  belumLaporCount: number;
 }
 
 // ── Helper: header kolom tabel yang bisa diklik untuk sort ──────────────────
@@ -122,6 +131,13 @@ export function ManajemenKegiatanPage({
   sort,
   order,
   pjOptions,
+  wajibLaporData,
+  belumLaporCount,
+  sudahLaporCount,
+  totalWajibCount,
+  wajibPage,
+  wajibPageSize,
+  wajibTotal,
 }: ManajemenKegiatanPageProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -132,10 +148,37 @@ export function ManajemenKegiatanPage({
   const [activeTab, setActiveTab] = useState<"wajib" | "master">("master");
 
   // Checkbox wajib-lapor: masih local state, belum persisten ke DB (scope PR terpisah)
-  const [wajibState, setWajibState] = useState<Record<string, boolean>>(
-    Object.fromEntries(data.map((k) => [k.id, k.wajib])),
+  // Optimistic state: mulai dari data server, di-override sementara saat toggle diklik,
+  // lalu router.refresh() akan sinkronkan ulang dengan data server yang sesungguhnya.
+  const [wajibOverride, setWajibOverride] = useState<Record<string, boolean>>(
+    {},
   );
 
+  const getWajibValue = (k: KegiatanFromDb) => wajibOverride[k.id] ?? k.wajib;
+
+  const handleToggleWajib = (k: KegiatanFromDb) => {
+    const newValue = !getWajibValue(k);
+
+    setWajibOverride((prev) => ({ ...prev, [k.id]: newValue }));
+    setPendingIds((prev) => new Set(prev).add(k.id));
+
+    toggleWajibLapor(k.id, newValue)
+      .then((result) => {
+        if (!result.success) {
+          setWajibOverride((prev) => ({ ...prev, [k.id]: !newValue }));
+          toast.error(`Gagal mengubah status "${k.nama}": ${result.error}`);
+          return;
+        }
+        router.refresh();
+      })
+      .finally(() => {
+        setPendingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(k.id);
+          return next;
+        });
+      });
+  };
   // Modal Add / Edit State
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -147,16 +190,12 @@ export function ManajemenKegiatanPage({
   const [formCategory, setFormCategory] = useState<string>("");
   const [formError, setFormError] = useState<string | null>(null);
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<KegiatanFromDb | null>(null);
 
   // Search: local state untuk input (biar responsif tiap ketik), didebounce ke URL
   const [searchInput, setSearchInput] = useState(searchParams.get("q") ?? "");
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
 
   // ── URL state helpers ───────────────────────────────────────────────────
   const updateParams = (updates: Record<string, string | number | null>) => {
@@ -245,7 +284,7 @@ export function ManajemenKegiatanPage({
         return;
       }
 
-      showToast(
+      toast.success(
         editId
           ? `Kegiatan "${result.kegiatan.kode}" berhasil diperbarui (Kategori: ${formCategory})`
           : `Kegiatan "${result.kegiatan.kode}" berhasil disimpan (Kategori: ${formCategory})`,
@@ -263,23 +302,36 @@ export function ManajemenKegiatanPage({
       const result = await deleteKegiatan(target.id);
 
       if (!result.success) {
-        showToast(`❌ Gagal menghapus: ${result.error}`);
+        toast.error(`Gagal menghapus: ${result.error}`);
         setDeleteTarget(null);
         return;
       }
 
-      showToast(`Kegiatan "${target.nama}" berhasil dihapus.`);
+      toast.success(`Kegiatan "${target.nama}" berhasil dihapus.`);
       setDeleteTarget(null);
       router.refresh();
     });
   };
 
   // ── Statistik tab wajib lapor ────────────────────────────────────────────
-  const totalWajib = Object.values(wajibState).filter(Boolean).length;
-  const sudahLapor = data.filter(
-    (k) => wajibState[k.id] && k.sudahLapor,
-  ).length;
-  const belumLapor = totalWajib - sudahLapor;
+  const totalWajibDisplay =
+    totalWajibCount +
+    wajibLaporData.reduce((delta, k) => {
+      const overridden = wajibOverride[k.id];
+      if (overridden === undefined || overridden === k.wajib) return delta;
+      return delta + (overridden ? 1 : -1);
+    }, 0);
+
+  const sudahLaporDisplay =
+    sudahLaporCount +
+    wajibLaporData.reduce((delta, k) => {
+      if (!k.sudahLapor) return delta;
+      const overridden = wajibOverride[k.id];
+      if (overridden === undefined || overridden === k.wajib) return delta;
+      return delta + (overridden ? 1 : -1);
+    }, 0);
+
+  const belumLaporDisplay = totalWajibDisplay - sudahLaporDisplay;
 
   return (
     <>
@@ -291,9 +343,6 @@ export function ManajemenKegiatanPage({
               <h2 className="text-lg sm:text-xl font-bold text-slate-800 tracking-tight">
                 Manajemen Kegiatan & Auto-Grouping Program DIPA
               </h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
-                Tersambung Database
-              </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
               Penetapan kewajiban lapor, auto-kategorisasi kode DIPA
@@ -320,18 +369,6 @@ export function ManajemenKegiatanPage({
           </div>
         </div>
 
-        {toastMessage && (
-          <div className="bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-3 rounded-lg text-xs font-semibold flex items-center justify-between shadow-xs">
-            <span>{toastMessage}</span>
-            <button
-              onClick={() => setToastMessage(null)}
-              className="text-emerald-800 hover:text-emerald-950 p-1 cursor-pointer font-bold"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
         {/* ── Tabs Container ── */}
         <div className="bg-white rounded-lg border border-slate-200/80 shadow-xs overflow-hidden">
           <div className="flex border-b border-slate-200 bg-slate-50/50 px-4 gap-2">
@@ -353,7 +390,7 @@ export function ManajemenKegiatanPage({
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              2. Penetapan Kewajiban Lapor ({totalWajib} Wajib)
+              2. Penetapan Kewajiban Lapor ({totalWajibDisplay} Wajib)
             </button>
           </div>
 
@@ -426,11 +463,9 @@ export function ManajemenKegiatanPage({
                         currentSort={sort}
                         currentOrder={order}
                         onSort={handleSort}
-                        className="min-w-[200px]"
+                        className="min-w-50"
                       />
-                      <th className="py-2.5 px-3 min-w-[180px]">
-                        Program Utama
-                      </th>
+                      <th className="py-2.5 px-3 min-w-45">Program Utama</th>
                       <th className="py-2.5 px-3">Jenis</th>
                       <th className="py-2.5 px-3">PJ & Kontak</th>
                       <SortableHeader
@@ -484,7 +519,7 @@ export function ManajemenKegiatanPage({
                             <td className="py-2.5 px-3">
                               <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-50 border border-slate-200">
                                 <span
-                                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                  className="w-2.5 h-2.5 rounded-full shrink-0"
                                   style={{ backgroundColor: catColor }}
                                 />
                                 <span className="text-[11px] font-semibold text-slate-800">
@@ -555,7 +590,6 @@ export function ManajemenKegiatanPage({
               </div>
 
               {/* Pagination */}
-              {/* Pagination */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
                 <span className="text-xs text-slate-500">
                   Menampilkan <b className="text-slate-800">{data.length}</b>{" "}
@@ -585,7 +619,7 @@ export function ManajemenKegiatanPage({
                         <button
                           key={p}
                           onClick={() => updateParams({ page: p })}
-                          className={`min-w-[30px] px-2.5 py-1.5 text-xs font-semibold rounded-md border cursor-pointer transition ${
+                          className={`min-w-7.5 px-2.5 py-1.5 text-xs font-semibold rounded-md border cursor-pointer transition ${
                             p === page
                               ? "bg-emerald-800 border-emerald-800 text-white"
                               : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
@@ -619,7 +653,7 @@ export function ManajemenKegiatanPage({
                     TOTAL WAJIB LAPOR
                   </p>
                   <p className="text-2xl font-bold text-slate-800">
-                    {totalWajib}
+                    {totalWajibDisplay}
                   </p>
                 </div>
                 <div className="bg-white p-3.5 rounded-lg border border-slate-200/80 shadow-xs">
@@ -627,7 +661,7 @@ export function ManajemenKegiatanPage({
                     SUDAH LAPOR
                   </p>
                   <p className="text-2xl font-bold text-emerald-800">
-                    {sudahLapor}
+                    {sudahLaporDisplay}
                   </p>
                 </div>
                 <div className="bg-white p-3.5 rounded-lg border border-slate-200/80 shadow-xs">
@@ -635,16 +669,9 @@ export function ManajemenKegiatanPage({
                     BELUM LAPOR
                   </p>
                   <p className="text-2xl font-bold text-amber-800">
-                    {belumLapor}
+                    {belumLaporDisplay}
                   </p>
                 </div>
-              </div>
-
-              <div className="bg-amber-50 border border-amber-200 text-amber-800 text-[11px] rounded-md p-2.5">
-                ⚠️ Tab ini hanya menampilkan data pada halaman saat ini
-                (mengikuti pagination di atas), belum menampilkan seluruh{" "}
-                {total} kegiatan sekaligus. Checkbox juga masih local state,
-                belum tersimpan ke database.
               </div>
 
               <div className="overflow-x-auto w-full border border-slate-200 rounded-lg">
@@ -660,7 +687,7 @@ export function ManajemenKegiatanPage({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
-                    {data.map((k) => (
+                    {wajibLaporData.map((k) => (
                       <tr
                         key={k.id}
                         className="hover:bg-slate-50/80 transition"
@@ -668,14 +695,10 @@ export function ManajemenKegiatanPage({
                         <td className="py-2.5 px-3 text-center">
                           <input
                             type="checkbox"
-                            checked={Boolean(wajibState[k.id])}
-                            onChange={(e) =>
-                              setWajibState({
-                                ...wajibState,
-                                [k.id]: e.target.checked,
-                              })
-                            }
-                            className="w-4 h-4 text-emerald-800 rounded border-slate-300 focus:ring-emerald-700 cursor-pointer"
+                            checked={getWajibValue(k)}
+                            onChange={() => handleToggleWajib(k)}
+                            disabled={pendingIds.has(k.id)}
+                            className="w-4 h-4 text-emerald-800 rounded border-slate-300 focus:ring-emerald-700 cursor-pointer disabled:opacity-50"
                           />
                         </td>
                         <td className="py-2.5 px-3 font-mono font-semibold text-slate-800">
@@ -709,22 +732,60 @@ export function ManajemenKegiatanPage({
                 </table>
               </div>
 
-              <div className="flex items-center justify-between pt-2">
-                <span className="text-xs text-slate-500">
-                  Centang kotak untuk menetapkan kegiatan sebagai kewajiban
-                  lapor bulanan. (Belum tersimpan ke database)
-                </span>
-                <button
-                  onClick={() =>
-                    showToast(
-                      "⚠️ Penyimpanan kewajiban lapor belum tersambung ke database di PR ini.",
-                    )
-                  }
-                  className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold rounded-md transition cursor-pointer shadow-xs"
-                >
-                  Simpan Penetapan Kewajiban
-                </button>
-              </div>
+              {(() => {
+                const wajibTotalPages = Math.max(
+                  1,
+                  Math.ceil(wajibTotal / wajibPageSize),
+                );
+                return wajibTotalPages > 1 ? (
+                  <div className="flex items-center justify-between pt-3">
+                    <span className="text-xs text-slate-500">
+                      Menampilkan{" "}
+                      <b className="text-slate-800">{wajibLaporData.length}</b>{" "}
+                      dari <b className="text-slate-800">{wajibTotal}</b> total
+                      kegiatan
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        disabled={wajibPage <= 1}
+                        onClick={() => updateParams({ wpage: wajibPage - 1 })}
+                        className="px-2.5 py-1.5 text-xs font-semibold rounded-md border border-slate-300 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 cursor-pointer"
+                      >
+                        ‹
+                      </button>
+                      {getPageNumbers(wajibPage, wajibTotalPages).map((p, i) =>
+                        p === "..." ? (
+                          <span
+                            key={`w-ellipsis-${i}`}
+                            className="px-2 text-xs text-slate-400 select-none"
+                          >
+                            …
+                          </span>
+                        ) : (
+                          <button
+                            key={p}
+                            onClick={() => updateParams({ wpage: p })}
+                            className={`min-w-[30px] px-2.5 py-1.5 text-xs font-semibold rounded-md border cursor-pointer transition ${
+                              p === wajibPage
+                                ? "bg-emerald-800 border-emerald-800 text-white"
+                                : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        ),
+                      )}
+                      <button
+                        disabled={wajibPage >= wajibTotalPages}
+                        onClick={() => updateParams({ wpage: wajibPage + 1 })}
+                        className="px-2.5 py-1.5 text-xs font-semibold rounded-md border border-slate-300 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 cursor-pointer"
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
             </div>
           )}
         </div>

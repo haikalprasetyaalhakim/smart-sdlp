@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -10,7 +11,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "SMART BRMP SDLAHAN — Kementerian Pertanian RI",
-  description: "Sistem Monitoring, Analisis, Reporting & Tracking — Balai Besar Perakitan dan Modernisasi Sumber Daya Lahan Pertanian (TA 2026)",
+  description:
+    "Sistem Monitoring, Analisis, Reporting & Tracking — Balai Besar Perakitan dan Modernisasi Sumber Daya Lahan Pertanian (TA 2026)",
 };
 
 export default function RootLayout({
@@ -19,9 +21,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${plusJakartaSans.variable} h-full antialiased`}>
+    <html
+      lang="id"
+      className={`${plusJakartaSans.variable} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col font-sans bg-slate-50 text-slate-800">
         {children}
+        <Toaster
+          position="top-center"
+          richColors
+          closeButton
+          toastOptions={{
+            className: "text-sm",
+          }}
+        />
       </body>
     </html>
   );
