@@ -22,8 +22,8 @@ import {
   PROGRAM_COLORS,
   resolveProgramCategory,
 } from "@/utils/programCategorization";
-import { useRouter } from "next/navigation";
-import React, { useMemo, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState, useTransition } from "react";
 
 type KegiatanFromDb = {
   id: string;
@@ -47,29 +47,94 @@ type KegiatanFromDb = {
 type PjOption = { id: string; name: string; email: string };
 
 interface ManajemenKegiatanPageProps {
-  initialKegiatan: KegiatanFromDb[];
+  data: KegiatanFromDb[];
+  total: number;
+  page: number;
+  pageSize: number;
+  sort: string;
+  order: "asc" | "desc";
   pjOptions: PjOption[];
 }
 
+// ── Helper: header kolom tabel yang bisa diklik untuk sort ──────────────────
+function SortableHeader({
+  column,
+  label,
+  currentSort,
+  currentOrder,
+  onSort,
+  align = "left",
+  className = "",
+}: {
+  column: string;
+  label: string;
+  currentSort: string;
+  currentOrder: "asc" | "desc";
+  onSort: (column: string) => void;
+  align?: "left" | "right";
+  className?: string;
+}) {
+  const isActive = currentSort === column;
+  return (
+    <th
+      onClick={() => onSort(column)}
+      className={`py-2.5 px-3 cursor-pointer select-none hover:bg-slate-200/50 transition ${
+        align === "right" ? "text-right" : "text-left"
+      } ${className}`}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {isActive && (
+          <span className="text-emerald-700">
+            {currentOrder === "asc" ? "▲" : "▼"}
+          </span>
+        )}
+      </span>
+    </th>
+  );
+}
+
+function getPageNumbers(current: number, total: number): (number | "...")[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const pages: (number | "...")[] = [1];
+
+  if (current > 3) pages.push("...");
+
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+
+  if (current < total - 2) pages.push("...");
+
+  pages.push(total);
+
+  return pages;
+}
+
 export function ManajemenKegiatanPage({
-  initialKegiatan,
+  data,
+  total,
+  page,
+  pageSize,
+  sort,
+  order,
   pjOptions,
 }: ManajemenKegiatanPageProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [isPending, startTransition] = useTransition();
 
   const [activeTab, setActiveTab] = useState<"wajib" | "master">("master");
 
-  const kegiatanDb = initialKegiatan;
-
+  // Checkbox wajib-lapor: masih local state, belum persisten ke DB (scope PR terpisah)
   const [wajibState, setWajibState] = useState<Record<string, boolean>>(
-    Object.fromEntries(kegiatanDb.map((k) => [k.id, k.wajib])),
+    Object.fromEntries(data.map((k) => [k.id, k.wajib])),
   );
-
-  // Filter & Search state
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategoryFilter, setSelectedCategoryFilter] =
-    useState<string>("ALL");
 
   // Modal Add / Edit State
   const [modalOpen, setModalOpen] = useState(false);
@@ -83,14 +148,45 @@ export function ManajemenKegiatanPage({
   const [formError, setFormError] = useState<string | null>(null);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
   const [deleteTarget, setDeleteTarget] = useState<KegiatanFromDb | null>(null);
+
+  // Search: local state untuk input (biar responsif tiap ketik), didebounce ke URL
+  const [searchInput, setSearchInput] = useState(searchParams.get("q") ?? "");
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  // ── URL state helpers ───────────────────────────────────────────────────
+  const updateParams = (updates: Record<string, string | number | null>) => {
+    const next = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null || value === "") {
+        next.delete(key);
+      } else {
+        next.set(key, String(value));
+      }
+    }
+    router.push(`${pathname}?${next.toString()}`);
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateParams({ q: searchInput || null, page: 1 });
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  const handleSort = (column: string) => {
+    const newOrder = sort === column && order === "desc" ? "asc" : "desc";
+    updateParams({ sort: column, order: newOrder, page: 1 });
+  };
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  // ── Modal handlers ──────────────────────────────────────────────────────
   const openAdd = () => {
     setEditId(null);
     setFormError(null);
@@ -177,28 +273,10 @@ export function ManajemenKegiatanPage({
       router.refresh();
     });
   };
-  const filteredKegiatan = useMemo(() => {
-    return kegiatanDb.filter((k) => {
-      const matchSearch =
-        k.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        k.kode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (k.pj?.name ?? "").toLowerCase().includes(searchTerm.toLowerCase());
 
-      const currentCategory = resolveProgramCategory(
-        k.kode,
-        k.nama,
-        k.programCategory ?? undefined,
-      );
-      const matchCategory =
-        selectedCategoryFilter === "ALL" ||
-        currentCategory === selectedCategoryFilter;
-
-      return matchSearch && matchCategory;
-    });
-  }, [kegiatanDb, searchTerm, selectedCategoryFilter]);
-
+  // ── Statistik tab wajib lapor ────────────────────────────────────────────
   const totalWajib = Object.values(wajibState).filter(Boolean).length;
-  const sudahLapor = kegiatanDb.filter(
+  const sudahLapor = data.filter(
     (k) => wajibState[k.id] && k.sudahLapor,
   ).length;
   const belumLapor = totalWajib - sudahLapor;
@@ -265,8 +343,7 @@ export function ManajemenKegiatanPage({
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              1. Master Data Seluruh Kegiatan ({kegiatanDb.length} Kegiatan
-              Terdaftar)
+              1. Master Data Seluruh Kegiatan ({total} Kegiatan Terdaftar)
             </button>
             <button
               onClick={() => setActiveTab("wajib")}
@@ -282,24 +359,40 @@ export function ManajemenKegiatanPage({
 
           {activeTab === "master" && (
             <div className="p-4 sm:p-5 space-y-4">
+              {/* Toolbar Search & Filter */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
                 <div className="relative w-full sm:w-72">
                   <input
                     type="text"
                     placeholder="Cari kode, nama, atau PJ..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                     className="w-full pl-9 pr-4 py-1.5 text-xs bg-white border border-slate-300 rounded-md text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700"
                   />
+                  <svg
+                    width={14}
+                    height={14}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  >
+                    <path d={Icons.search} />
+                  </svg>
                 </div>
                 <select
-                  value={selectedCategoryFilter}
-                  onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                  value={searchParams.get("kategori") ?? "ALL"}
+                  onChange={(e) =>
+                    updateParams({
+                      kategori:
+                        e.target.value === "ALL" ? null : e.target.value,
+                      page: 1,
+                    })
+                  }
                   className="h-8 px-2.5 text-xs bg-white border border-slate-300 rounded-md font-medium text-slate-700 cursor-pointer"
                 >
-                  <option value="ALL">
-                    Semua Program ({kegiatanDb.length})
-                  </option>
+                  <option value="ALL">Semua Program ({total})</option>
                   <option value="Layanan Perkantoran">
                     Layanan Perkantoran
                   </option>
@@ -314,26 +407,45 @@ export function ManajemenKegiatanPage({
                 </select>
               </div>
 
+              {/* Master Table */}
               <div className="overflow-x-auto w-full border border-slate-200 rounded-lg">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-100/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                       <th className="py-2.5 px-3 w-10 text-center">No</th>
-                      <th className="py-2.5 px-3">Kode Kegiatan</th>
-                      <th className="py-2.5 px-3 min-w-[200px]">
-                        Nama Kegiatan
-                      </th>
+                      <SortableHeader
+                        column="kode"
+                        label="Kode Kegiatan"
+                        currentSort={sort}
+                        currentOrder={order}
+                        onSort={handleSort}
+                      />
+                      <SortableHeader
+                        column="nama"
+                        label="Nama Kegiatan"
+                        currentSort={sort}
+                        currentOrder={order}
+                        onSort={handleSort}
+                        className="min-w-[200px]"
+                      />
                       <th className="py-2.5 px-3 min-w-[180px]">
                         Program Utama
                       </th>
                       <th className="py-2.5 px-3">Jenis</th>
                       <th className="py-2.5 px-3">PJ & Kontak</th>
-                      <th className="py-2.5 px-3 text-right">Pagu (Rp)</th>
+                      <SortableHeader
+                        column="pagu"
+                        label="Pagu (Rp)"
+                        currentSort={sort}
+                        currentOrder={order}
+                        onSort={handleSort}
+                        align="right"
+                      />
                       <th className="py-2.5 px-3 text-center w-24">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
-                    {filteredKegiatan.length === 0 ? (
+                    {data.length === 0 ? (
                       <tr>
                         <td
                           colSpan={8}
@@ -344,20 +456,22 @@ export function ManajemenKegiatanPage({
                         </td>
                       </tr>
                     ) : (
-                      filteredKegiatan.map((k, idx) => {
+                      data.map((k, idx) => {
                         const category = resolveProgramCategory(
                           k.kode,
                           k.nama,
                           k.programCategory ?? undefined,
                         );
                         const catColor = PROGRAM_COLORS[category] || "#64748B";
+                        const rowNumber = (page - 1) * pageSize + idx + 1;
+
                         return (
                           <tr
                             key={k.id}
                             className="hover:bg-slate-50/80 transition"
                           >
                             <td className="py-2.5 px-3 text-slate-400 font-semibold text-center text-[11px]">
-                              {idx + 1}
+                              {rowNumber}
                             </td>
                             <td className="py-2.5 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
                               <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
@@ -400,7 +514,7 @@ export function ManajemenKegiatanPage({
                                 <button
                                   onClick={() => openEdit(k)}
                                   className="p-1.5 text-slate-500 hover:text-emerald-700 rounded hover:bg-slate-100 cursor-pointer"
-                                  title="Edit Kegiatan (belum tersambung DB)"
+                                  title="Edit Kegiatan"
                                 >
                                   <svg
                                     width={14}
@@ -439,6 +553,61 @@ export function ManajemenKegiatanPage({
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              {/* Pagination */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+                <span className="text-xs text-slate-500">
+                  Menampilkan <b className="text-slate-800">{data.length}</b>{" "}
+                  dari <b className="text-slate-800">{total}</b> total kegiatan
+                </span>
+
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      disabled={page <= 1}
+                      onClick={() => updateParams({ page: page - 1 })}
+                      className="px-2.5 py-1.5 text-xs font-semibold rounded-md border border-slate-300 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 cursor-pointer"
+                      aria-label="Halaman sebelumnya"
+                    >
+                      ‹
+                    </button>
+
+                    {getPageNumbers(page, totalPages).map((p, i) =>
+                      p === "..." ? (
+                        <span
+                          key={`ellipsis-${i}`}
+                          className="px-2 text-xs text-slate-400 select-none"
+                        >
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => updateParams({ page: p })}
+                          className={`min-w-[30px] px-2.5 py-1.5 text-xs font-semibold rounded-md border cursor-pointer transition ${
+                            p === page
+                              ? "bg-emerald-800 border-emerald-800 text-white"
+                              : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                          }`}
+                          aria-current={p === page ? "page" : undefined}
+                        >
+                          {p}
+                        </button>
+                      ),
+                    )}
+
+                    <button
+                      disabled={page >= totalPages}
+                      onClick={() => updateParams({ page: page + 1 })}
+                      className="px-2.5 py-1.5 text-xs font-semibold rounded-md border border-slate-300 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 cursor-pointer"
+                      aria-label="Halaman berikutnya"
+                    >
+                      ›
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -471,7 +640,13 @@ export function ManajemenKegiatanPage({
                 </div>
               </div>
 
-              {/* Tabel wajib lapor: struktur sama seperti sebelumnya, checkbox masih local state (belum persisten) */}
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 text-[11px] rounded-md p-2.5">
+                ⚠️ Tab ini hanya menampilkan data pada halaman saat ini
+                (mengikuti pagination di atas), belum menampilkan seluruh{" "}
+                {total} kegiatan sekaligus. Checkbox juga masih local state,
+                belum tersimpan ke database.
+              </div>
+
               <div className="overflow-x-auto w-full border border-slate-200 rounded-lg">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -485,7 +660,7 @@ export function ManajemenKegiatanPage({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
-                    {kegiatanDb.map((k) => (
+                    {data.map((k) => (
                       <tr
                         key={k.id}
                         className="hover:bg-slate-50/80 transition"
@@ -518,7 +693,7 @@ export function ManajemenKegiatanPage({
                           </span>
                         </td>
                         <td className="py-2.5 px-3 text-right font-medium whitespace-nowrap">
-                          {fmtRupiah(Number(k.pagu))}
+                          {fmtRupiah(k.pagu)}
                         </td>
                         <td className="py-2.5 px-3 text-center">
                           <Badge
@@ -554,7 +729,7 @@ export function ManajemenKegiatanPage({
           )}
         </div>
 
-        {/* ── Modal Add Kegiatan ── */}
+        {/* ── Modal Add/Edit Kegiatan ── */}
         {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
             <div className="bg-white rounded-lg shadow-xl border border-slate-200 w-full max-w-lg overflow-hidden">
@@ -730,7 +905,7 @@ export function ManajemenKegiatanPage({
             <AlertDialogDescription>
               Anda akan menghapus kegiatan{" "}
               <span className="font-semibold text-slate-900">
-                {`${deleteTarget?.nama}`}
+                {deleteTarget?.nama}
               </span>{" "}
               (kode: {deleteTarget?.kode}). Tindakan ini tidak bisa dibatalkan
               dan akan menghapus data secara permanen dari database.
