@@ -54,7 +54,8 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  Kegiatan: 'Kegiatan'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -134,6 +135,29 @@ export const VerificationScalarFieldEnum = {
 } as const
 
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
+
+
+export const KegiatanScalarFieldEnum = {
+  id: 'id',
+  kode: 'kode',
+  nama: 'nama',
+  jenis: 'jenis',
+  programCategory: 'programCategory',
+  pagu: 'pagu',
+  realisasi: 'realisasi',
+  fisik: 'fisik',
+  uraian: 'uraian',
+  statusAnggaran: 'statusAnggaran',
+  realLalu: 'realLalu',
+  realIni: 'realIni',
+  wajib: 'wajib',
+  sudahLapor: 'sudahLapor',
+  pjId: 'pjId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KegiatanScalarFieldEnum = (typeof KegiatanScalarFieldEnum)[keyof typeof KegiatanScalarFieldEnum]
 
 
 export const SortOrder = {

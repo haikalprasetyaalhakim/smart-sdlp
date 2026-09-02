@@ -232,6 +232,7 @@ export type UserWhereInput = {
   unitKerja?: Prisma.StringNullableFilter<"User"> | string | null
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
+  kegiatanSebagaiPJ?: Prisma.KegiatanListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -248,6 +249,7 @@ export type UserOrderByWithRelationInput = {
   unitKerja?: Prisma.SortOrderInput | Prisma.SortOrder
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   accounts?: Prisma.AccountOrderByRelationAggregateInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -267,6 +269,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   unitKerja?: Prisma.StringNullableFilter<"User"> | string | null
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
+  kegiatanSebagaiPJ?: Prisma.KegiatanListRelationFilter
 }, "id" | "email" | "nip">
 
 export type UserOrderByWithAggregationInput = {
@@ -317,6 +320,7 @@ export type UserCreateInput = {
   unitKerja?: string | null
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanCreateNestedManyWithoutPjInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -333,6 +337,7 @@ export type UserUncheckedCreateInput = {
   unitKerja?: string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedCreateNestedManyWithoutPjInput
 }
 
 export type UserUpdateInput = {
@@ -349,6 +354,7 @@ export type UserUpdateInput = {
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUpdateManyWithoutPjNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -365,6 +371,7 @@ export type UserUncheckedUpdateInput = {
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedUpdateManyWithoutPjNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -456,6 +463,11 @@ export type UserScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput
 }
 
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
@@ -504,6 +516,22 @@ export type UserUpdateOneRequiredWithoutAccountsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAccountsInput, Prisma.UserUpdateWithoutAccountsInput>, Prisma.UserUncheckedUpdateWithoutAccountsInput>
 }
 
+export type UserCreateNestedOneWithoutKegiatanSebagaiPJInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutKegiatanSebagaiPJInput, Prisma.UserUncheckedCreateWithoutKegiatanSebagaiPJInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKegiatanSebagaiPJInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutKegiatanSebagaiPJNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutKegiatanSebagaiPJInput, Prisma.UserUncheckedCreateWithoutKegiatanSebagaiPJInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutKegiatanSebagaiPJInput
+  upsert?: Prisma.UserUpsertWithoutKegiatanSebagaiPJInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutKegiatanSebagaiPJInput, Prisma.UserUpdateWithoutKegiatanSebagaiPJInput>, Prisma.UserUncheckedUpdateWithoutKegiatanSebagaiPJInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   id?: string
   name: string
@@ -517,6 +545,7 @@ export type UserCreateWithoutSessionsInput = {
   jabatan?: string | null
   unitKerja?: string | null
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanCreateNestedManyWithoutPjInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -532,6 +561,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   jabatan?: string | null
   unitKerja?: string | null
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedCreateNestedManyWithoutPjInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -563,6 +593,7 @@ export type UserUpdateWithoutSessionsInput = {
   jabatan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUpdateManyWithoutPjNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -578,6 +609,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   jabatan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedUpdateManyWithoutPjNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -593,6 +625,7 @@ export type UserCreateWithoutAccountsInput = {
   jabatan?: string | null
   unitKerja?: string | null
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanCreateNestedManyWithoutPjInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -608,6 +641,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   jabatan?: string | null
   unitKerja?: string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedCreateNestedManyWithoutPjInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -639,6 +673,7 @@ export type UserUpdateWithoutAccountsInput = {
   jabatan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUpdateManyWithoutPjNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -654,6 +689,87 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   jabatan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedUpdateManyWithoutPjNestedInput
+}
+
+export type UserCreateWithoutKegiatanSebagaiPJInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: $Enums.UserRole
+  nip?: string | null
+  jabatan?: string | null
+  unitKerja?: string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutKegiatanSebagaiPJInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: $Enums.UserRole
+  nip?: string | null
+  jabatan?: string | null
+  unitKerja?: string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutKegiatanSebagaiPJInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutKegiatanSebagaiPJInput, Prisma.UserUncheckedCreateWithoutKegiatanSebagaiPJInput>
+}
+
+export type UserUpsertWithoutKegiatanSebagaiPJInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutKegiatanSebagaiPJInput, Prisma.UserUncheckedUpdateWithoutKegiatanSebagaiPJInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutKegiatanSebagaiPJInput, Prisma.UserUncheckedCreateWithoutKegiatanSebagaiPJInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutKegiatanSebagaiPJInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutKegiatanSebagaiPJInput, Prisma.UserUncheckedUpdateWithoutKegiatanSebagaiPJInput>
+}
+
+export type UserUpdateWithoutKegiatanSebagaiPJInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  nip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  jabatan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutKegiatanSebagaiPJInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  nip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  jabatan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -664,11 +780,13 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
 export type UserCountOutputType = {
   sessions: number
   accounts: number
+  kegiatanSebagaiPJ: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
+  kegiatanSebagaiPJ?: boolean | UserCountOutputTypeCountKegiatanSebagaiPJArgs
 }
 
 /**
@@ -695,6 +813,13 @@ export type UserCountOutputTypeCountAccountsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.AccountWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountKegiatanSebagaiPJArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.KegiatanWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -710,6 +835,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   unitKerja?: boolean
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
+  kegiatanSebagaiPJ?: boolean | Prisma.User$kegiatanSebagaiPJArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -759,6 +885,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
+  kegiatanSebagaiPJ?: boolean | Prisma.User$kegiatanSebagaiPJArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -769,6 +896,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     accounts: Prisma.$AccountPayload<ExtArgs>[]
+    kegiatanSebagaiPJ: Prisma.$KegiatanPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1178,6 +1306,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  kegiatanSebagaiPJ<T extends Prisma.User$kegiatanSebagaiPJArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$kegiatanSebagaiPJArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KegiatanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1656,6 +1785,30 @@ export type User$accountsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.AccountScalarFieldEnum | Prisma.AccountScalarFieldEnum[]
+}
+
+/**
+ * User.kegiatanSebagaiPJ
+ */
+export type User$kegiatanSebagaiPJArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Kegiatan
+   */
+  select?: Prisma.KegiatanSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Kegiatan
+   */
+  omit?: Prisma.KegiatanOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KegiatanInclude<ExtArgs> | null
+  where?: Prisma.KegiatanWhereInput
+  orderBy?: Prisma.KegiatanOrderByWithRelationInput | Prisma.KegiatanOrderByWithRelationInput[]
+  cursor?: Prisma.KegiatanWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.KegiatanScalarFieldEnum | Prisma.KegiatanScalarFieldEnum[]
 }
 
 /**

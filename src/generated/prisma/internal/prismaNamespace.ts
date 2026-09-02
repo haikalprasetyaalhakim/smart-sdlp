@@ -400,7 +400,8 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  Kegiatan: 'Kegiatan'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -416,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification"
+    modelProps: "user" | "session" | "account" | "verification" | "kegiatan"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -716,6 +717,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Kegiatan: {
+      payload: Prisma.$KegiatanPayload<ExtArgs>
+      fields: Prisma.KegiatanFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.KegiatanFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.KegiatanFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload>
+        }
+        findFirst: {
+          args: Prisma.KegiatanFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.KegiatanFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload>
+        }
+        findMany: {
+          args: Prisma.KegiatanFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload>[]
+        }
+        create: {
+          args: Prisma.KegiatanCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload>
+        }
+        createMany: {
+          args: Prisma.KegiatanCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.KegiatanCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload>[]
+        }
+        delete: {
+          args: Prisma.KegiatanDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload>
+        }
+        update: {
+          args: Prisma.KegiatanUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload>
+        }
+        deleteMany: {
+          args: Prisma.KegiatanDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.KegiatanUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.KegiatanUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload>[]
+        }
+        upsert: {
+          args: Prisma.KegiatanUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$KegiatanPayload>
+        }
+        aggregate: {
+          args: Prisma.KegiatanAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateKegiatan>
+        }
+        groupBy: {
+          args: Prisma.KegiatanGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KegiatanGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.KegiatanCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.KegiatanCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -818,6 +893,29 @@ export const VerificationScalarFieldEnum = {
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
 
 
+export const KegiatanScalarFieldEnum = {
+  id: 'id',
+  kode: 'kode',
+  nama: 'nama',
+  jenis: 'jenis',
+  programCategory: 'programCategory',
+  pagu: 'pagu',
+  realisasi: 'realisasi',
+  fisik: 'fisik',
+  uraian: 'uraian',
+  statusAnggaran: 'statusAnggaran',
+  realLalu: 'realLalu',
+  realIni: 'realIni',
+  wajib: 'wajib',
+  sudahLapor: 'sudahLapor',
+  pjId: 'pjId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KegiatanScalarFieldEnum = (typeof KegiatanScalarFieldEnum)[keyof typeof KegiatanScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -898,6 +996,34 @@ export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 
 
 /**
+ * Reference to a field of type 'JenisAnggaran'
+ */
+export type EnumJenisAnggaranFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JenisAnggaran'>
+    
+
+
+/**
+ * Reference to a field of type 'JenisAnggaran[]'
+ */
+export type ListEnumJenisAnggaranFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JenisAnggaran[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt'
+ */
+export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt[]'
+ */
+export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -908,6 +1034,34 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusAnggaran'
+ */
+export type EnumStatusAnggaranFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusAnggaran'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusAnggaran[]'
+ */
+export type ListEnumStatusAnggaranFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusAnggaran[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -1065,6 +1219,7 @@ export type GlobalOmitConfig = {
   session?: Prisma.SessionOmit
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
+  kegiatan?: Prisma.KegiatanOmit
 }
 
 /* Types for Logging */

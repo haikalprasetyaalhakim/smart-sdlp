@@ -15,3 +15,19 @@ export const UserRole = {
 } as const
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
+
+
+export const JenisAnggaran = {
+  APBN: 'APBN',
+  NON_APBN: 'NON_APBN'
+} as const
+
+export type JenisAnggaran = (typeof JenisAnggaran)[keyof typeof JenisAnggaran]
+
+
+export const StatusAnggaran = {
+  DIBUKA: 'DIBUKA',
+  DIBLOKIR: 'DIBLOKIR'
+} as const
+
+export type StatusAnggaran = (typeof StatusAnggaran)[keyof typeof StatusAnggaran]
