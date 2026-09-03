@@ -9,11 +9,17 @@ export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
 
-  const rows = await prisma.kegiatan.findMany({
-    where: { pjId: session.user.id },
-    include: { pj: { select: { id: true, name: true, email: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+  const [rows, laporanRows] = await Promise.all([
+    prisma.kegiatan.findMany({
+      where: { pjId: session.user.id },
+      include: { pj: { select: { id: true, name: true, email: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.laporan.findMany({
+      where: { kegiatan: { pjId: session.user.id } },
+      orderBy: [{ periodeTahun: "desc" }, { periodeBulan: "desc" }],
+    }),
+  ]);
 
   const activities: Activity[] = rows.map((k) => ({
     id: k.id,
@@ -35,5 +41,22 @@ export default async function DashboardPage() {
     status: k.sudahLapor ? "done" : "pending",
   }));
 
-  return <UserDashboard activities={activities} />;
+  const laporanHistory = laporanRows.map((l) => ({
+    id: l.id,
+    kegiatanId: l.kegiatanId,
+    periodeBulan: l.periodeBulan,
+    periodeTahun: l.periodeTahun,
+    uraian: l.uraian,
+    fisik: l.fisik,
+    statusAnggaran:
+      l.statusAnggaran === "DIBLOKIR"
+        ? ("Diblokir" as const)
+        : ("Dibuka" as const),
+    realIni: Number(l.realIni),
+    realisasi: Number(l.realisasi),
+  }));
+
+  return (
+    <UserDashboard activities={activities} laporanHistory={laporanHistory} />
+  );
 }

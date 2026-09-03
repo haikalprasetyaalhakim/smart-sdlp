@@ -1,15 +1,59 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { Activity } from "@/types";
 import { fmtRupiah, Icons } from "@/utils/formatters";
 import { KpiCard, Badge, ProgressBar } from "./KpiCard";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+
+const NAMA_BULAN = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
+
+type LaporanHistoryItem = {
+  id: string;
+  kegiatanId: string;
+  periodeBulan: number;
+  periodeTahun: number;
+  uraian: string;
+  fisik: number;
+  statusAnggaran: "Dibuka" | "Diblokir";
+  realIni: number;
+  realisasi: number;
+};
 
 interface UserDashboardProps {
   activities: Activity[];
+  laporanHistory: LaporanHistoryItem[];
 }
 
-export function UserDashboard({ activities }: UserDashboardProps) {
+export function UserDashboard({
+  activities,
+  laporanHistory,
+}: UserDashboardProps) {
+  const [filterStatus, setFilterStatus] = useState<
+    "ALL" | "BELUM_LAPOR" | "WAJIB"
+  >("ALL");
+  const [historyTarget, setHistoryTarget] = useState<Activity | null>(null);
+
   const totalPagu = activities.reduce((a, b) => a + b.pagu, 0);
   const totalReal = activities.reduce((a, b) => a + b.realisasi, 0);
   const avgFisik = activities.length
@@ -17,6 +61,41 @@ export function UserDashboard({ activities }: UserDashboardProps) {
     : 0;
   const sisaAnggaran = totalPagu - totalReal;
   const persenSerapan = totalPagu > 0 ? (totalReal / totalPagu) * 100 : 0;
+
+  const sortedActivities = useMemo(() => {
+    return [...activities].sort((a, b) => {
+      const aBelumLapor = a.status !== "done" ? 1 : 0;
+      const bBelumLapor = b.status !== "done" ? 1 : 0;
+      if (aBelumLapor !== bBelumLapor) return bBelumLapor - aBelumLapor;
+
+      const aWajib = a.wajib ? 1 : 0;
+      const bWajib = b.wajib ? 1 : 0;
+      if (aWajib !== bWajib) return bWajib - aWajib;
+
+      return a.nama.localeCompare(b.nama);
+    });
+  }, [activities]);
+
+  const filteredActivities = useMemo(() => {
+    if (filterStatus === "ALL") return sortedActivities;
+    if (filterStatus === "BELUM_LAPOR")
+      return sortedActivities.filter((a) => a.status !== "done");
+    return sortedActivities.filter((a) => a.wajib);
+  }, [sortedActivities, filterStatus]);
+
+  const belumLaporCount = activities.filter((a) => a.status !== "done").length;
+  const wajibCount = activities.filter((a) => a.wajib).length;
+
+  const historyRows = useMemo(() => {
+    if (!historyTarget) return [];
+    return laporanHistory
+      .filter((l) => l.kegiatanId === historyTarget.id)
+      .sort((a, b) => {
+        if (a.periodeTahun !== b.periodeTahun)
+          return b.periodeTahun - a.periodeTahun;
+        return b.periodeBulan - a.periodeBulan;
+      });
+  }, [historyTarget, laporanHistory]);
 
   return (
     <div className="space-y-5">
@@ -83,14 +162,46 @@ export function UserDashboard({ activities }: UserDashboardProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-slate-200/80 flex items-center justify-between">
+          <div className="p-4 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-slate-800">
                 Daftar Kegiatan Dalam Tanggung Jawab
               </h3>
               <p className="text-xs text-slate-500">
-                Status pelaporan realisasi keuangan SMART & fisik bulan berjalan
+                Klik kode/nama kegiatan untuk lihat riwayat laporan bulanan
               </p>
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                onClick={() => setFilterStatus("ALL")}
+                className={`px-2.5 py-1 text-[11px] font-semibold rounded-full border transition cursor-pointer ${
+                  filterStatus === "ALL"
+                    ? "bg-slate-800 text-white border-slate-800"
+                    : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"
+                }`}
+              >
+                Semua ({activities.length})
+              </button>
+              <button
+                onClick={() => setFilterStatus("BELUM_LAPOR")}
+                className={`px-2.5 py-1 text-[11px] font-semibold rounded-full border transition cursor-pointer ${
+                  filterStatus === "BELUM_LAPOR"
+                    ? "bg-rose-600 text-white border-rose-600"
+                    : "bg-white text-rose-600 border-rose-300 hover:bg-rose-50"
+                }`}
+              >
+                Belum Lapor ({belumLaporCount})
+              </button>
+              <button
+                onClick={() => setFilterStatus("WAJIB")}
+                className={`px-2.5 py-1 text-[11px] font-semibold rounded-full border transition cursor-pointer ${
+                  filterStatus === "WAJIB"
+                    ? "bg-amber-600 text-white border-amber-600"
+                    : "bg-white text-amber-700 border-amber-300 hover:bg-amber-50"
+                }`}
+              >
+                Wajib ({wajibCount})
+              </button>
             </div>
           </div>
 
@@ -99,6 +210,7 @@ export function UserDashboard({ activities }: UserDashboardProps) {
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th className="py-2.5 px-3">Kode & Nama Kegiatan</th>
+                  <th className="py-2.5 px-3 text-center">Wajib</th>
                   <th className="py-2.5 px-3">Jenis</th>
                   <th className="py-2.5 px-3 text-right">Pagu</th>
                   <th className="py-2.5 px-3 text-right">Realisasi</th>
@@ -109,14 +221,16 @@ export function UserDashboard({ activities }: UserDashboardProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
-                {activities.length === 0 ? (
+                {filteredActivities.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-400">
-                      Belum ada kegiatan yang ditugaskan kepada Anda.
+                    <td colSpan={9} className="py-8 text-center text-slate-400">
+                      {activities.length === 0
+                        ? "Belum ada kegiatan yang ditugaskan kepada Anda."
+                        : "Tidak ada kegiatan yang cocok dengan filter."}
                     </td>
                   </tr>
                 ) : (
-                  activities.map((act) => {
+                  filteredActivities.map((act) => {
                     const pctKeu =
                       act.pagu > 0 ? (act.realisasi / act.pagu) * 100 : 0;
                     return (
@@ -125,12 +239,29 @@ export function UserDashboard({ activities }: UserDashboardProps) {
                         className="hover:bg-slate-50/80 transition"
                       >
                         <td className="py-3 px-3 max-w-[220px]">
-                          <span className="text-[11px] font-semibold text-emerald-800 font-mono block">
-                            {act.kode}
-                          </span>
-                          <span className="font-medium text-slate-900 line-clamp-2">
-                            {act.nama}
-                          </span>
+                          <button
+                            onClick={() => setHistoryTarget(act)}
+                            className="text-left cursor-pointer group"
+                            title="Lihat riwayat laporan bulanan"
+                          >
+                            <span className="text-[11px] font-semibold text-emerald-800 font-mono block group-hover:underline">
+                              {act.kode}
+                            </span>
+                            <span className="font-medium text-slate-900 line-clamp-2 group-hover:underline">
+                              {act.nama}
+                            </span>
+                          </button>
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          {act.wajib ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-300 text-[10px] font-bold">
+                              Wajib
+                            </span>
+                          ) : (
+                            <span className="text-slate-300 text-[10px]">
+                              —
+                            </span>
+                          )}
                         </td>
                         <td className="py-3 px-3">
                           <Badge
@@ -236,6 +367,63 @@ export function UserDashboard({ activities }: UserDashboardProps) {
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={!!historyTarget}
+        onOpenChange={(open) => !open && setHistoryTarget(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Riwayat Laporan — {historyTarget?.kode}</DialogTitle>
+            <DialogDescription>{historyTarget?.nama}</DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto">
+            {historyRows.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-8">
+                Belum ada riwayat laporan untuk kegiatan ini.
+              </p>
+            ) : (
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase sticky top-0">
+                    <th className="py-2 px-2">Periode</th>
+                    <th className="py-2 px-2 text-center">Fisik</th>
+                    <th className="py-2 px-2 text-right">
+                      Realisasi Bulan Ini
+                    </th>
+                    <th className="py-2 px-2 text-right">Kumulatif</th>
+                    <th className="py-2 px-2 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {historyRows.map((l) => (
+                    <tr key={l.id}>
+                      <td className="py-2 px-2 font-semibold text-slate-800 whitespace-nowrap">
+                        {NAMA_BULAN[l.periodeBulan - 1]} {l.periodeTahun}
+                      </td>
+                      <td className="py-2 px-2 text-center">{l.fisik}%</td>
+                      <td className="py-2 px-2 text-right whitespace-nowrap">
+                        {fmtRupiah(l.realIni)}
+                      </td>
+                      <td className="py-2 px-2 text-right font-bold text-emerald-800 whitespace-nowrap">
+                        {fmtRupiah(l.realisasi)}
+                      </td>
+                      <td className="py-2 px-2 text-center">
+                        <Badge
+                          text={l.statusAnggaran}
+                          color={
+                            l.statusAnggaran === "Dibuka" ? "green" : "red"
+                          }
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
