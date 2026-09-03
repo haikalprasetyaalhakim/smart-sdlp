@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { Activity } from "@/types";
 import { fmtRupiah, Icons } from "@/utils/formatters";
 import { KpiCard, Badge, ProgressBar } from "./KpiCard";
-import { barData, lineDataFull } from "@/data/mockData";
 import { Top5LowSerapanWidget } from "./Top5LowSerapanWidget";
 import { DistribusiPaguWidget } from "./DistribusiPaguWidget";
 import {
@@ -21,11 +20,29 @@ import {
 } from "recharts";
 import Link from "next/link";
 
-interface AdminDashboardProps {
-  activities: Activity[];
+interface BarDataPoint {
+  name: string;
+  apbn_real: number;
+  non_real: number;
 }
 
-export function AdminDashboard({ activities }: AdminDashboardProps) {
+interface LineDataPoint {
+  name: string;
+  target: number;
+  realisasi: number | undefined;
+}
+
+interface AdminDashboardProps {
+  activities: Activity[];
+  barData: BarDataPoint[];
+  lineDataFull: LineDataPoint[];
+}
+
+export function AdminDashboard({
+  activities,
+  barData,
+  lineDataFull,
+}: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<"serapan" | "trend" | "kegiatan">(
     "serapan",
   );
@@ -51,6 +68,23 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
     return matchSearch && matchJenis;
   });
 
+  const currentYear = new Date().getFullYear();
+  const periodeLabel =
+    barData.length > 0
+      ? `${barData[0].name} – ${barData[barData.length - 1].name} ${currentYear}`
+      : "-";
+  const posisiLabel =
+    barData.length > 0
+      ? `Posisi per ${barData[barData.length - 1].name} ${currentYear}`
+      : "-";
+
+  const lastDataPoint = [...lineDataFull]
+    .reverse()
+    .find((d) => d.realisasi !== undefined);
+  const statusLabel = lastDataPoint
+    ? `${lastDataPoint.realisasi! >= lastDataPoint.target ? "On-Track" : "Perlu Percepatan"} (${lastDataPoint.realisasi!.toFixed(1)}% vs ${lastDataPoint.target.toFixed(1)}%)`
+    : "Belum ada data";
+
   return (
     <div className="space-y-5">
       <div className="bg-white rounded-lg border border-slate-200/80 shadow-xs p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -60,7 +94,7 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
           </h2>
           <p className="text-xs text-slate-500 mt-1">
             Balai Besar Perakitan dan Modernisasi Sumber Daya Lahan Pertanian ·
-            Tahun Anggaran 2026
+            Tahun Anggaran {currentYear}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -117,7 +151,7 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
         <KpiCard
           label="Sisa Anggaran Belum Terserap"
           value={fmtRupiah(sisaAnggaran)}
-          sub="Posisi per Agustus 2026"
+          sub={posisiLabel}
           accent="#E2A917"
           icon={Icons.consolidate}
         />
@@ -140,7 +174,9 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
             ].map((t) => (
               <button
                 key={t.id}
-                // onClick={() => setActiveTab(t.id)}
+                onClick={() =>
+                  setActiveTab(t.id as "serapan" | "trend" | "kegiatan")
+                }
                 className={`whitespace-nowrap cursor-pointer transition-all duration-150 ${
                   activeTab === t.id
                     ? "bg-white text-emerald-950 font-semibold shadow-sm rounded-lg px-4 py-2 text-xs"
@@ -168,12 +204,11 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
                       </h4>
                     </div>
                     <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                      Jan – Agu 2026
+                      {periodeLabel}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500">
-                    Perbandingan nominal belanja anggaran bulanan (dalam Miliar
-                    Rp)
+                    Total realisasi keuangan per bulan (bukan kumulatif)
                   </p>
                 </div>
 
@@ -206,7 +241,7 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
                         tickFormatter={(v) => `${(v / 1e9).toFixed(1)}M`}
                       />
                       <Tooltip
-                        // formatter={(val: any) => [fmtRupiah(Number(val)), ""]}
+                        formatter={(val) => [fmtRupiah(Number(val)), ""]}
                         contentStyle={{
                           fontSize: 12,
                           borderRadius: 8,
@@ -266,12 +301,16 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
                       </h4>
                     </div>
                     <span className="text-[11px] text-emerald-800 font-semibold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200/80">
-                      On-Track (66.5% vs 66.7%)
+                      {statusLabel}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mb-4">
-                    Pemantauan kurva S realisasi kumulatif bulanan dibandingkan
-                    target rencana kerja.
+                  <p className="text-xs text-slate-500 mb-1">
+                    Realisasi kumulatif bulanan dibandingkan target rencana
+                    kerja.
+                  </p>
+                  <p className="text-[10px] text-amber-700 mb-3">
+                    ⚠ Garis target masih berupa asumsi linear (belum ada data
+                    rencana pencairan resmi/RKAKL)
                   </p>
                 </div>
                 <div className="h-64 sm:h-72 w-full">
@@ -287,12 +326,14 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
                         unit="%"
                         domain={[0, 100]}
                       />
-                      {/* <Tooltip formatter={(val: any) => [`${val}%`, ""]} /> */}
+                      <Tooltip
+                        formatter={(val) => [fmtRupiah(Number(val)), ""]}
+                      />
                       <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Line
                         type="monotone"
                         dataKey="target"
-                        name="Target Kumulatif (%)"
+                        name="Target Linear (Asumsi)"
                         stroke="#134B88"
                         strokeWidth={2}
                         strokeDasharray="4 4"
@@ -311,7 +352,7 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
                 </div>
               </div>
 
-              <Top5LowSerapanWidget />
+              <Top5LowSerapanWidget activities={activities} />
             </div>
           </div>
         )}
@@ -344,19 +385,23 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <select
                   value={filterJenis}
-                  // onChange={(e) => setFilterJenis(e.target.value as any)}
+                  onChange={(e) =>
+                    setFilterJenis(
+                      e.target.value as "ALL" | "APBN" | "NON-APBN",
+                    )
+                  }
                   className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-md font-medium text-slate-700"
                 >
                   <option value="ALL">Semua Jenis Anggaran</option>
                   <option value="APBN">APBN Saja</option>
                   <option value="NON-APBN">NON-APBN Saja</option>
                 </select>
-                <button
-                  // onClick={() => onNavigate("master")}
-                  className="h-9 px-3 text-xs font-semibold bg-emerald-800 text-white rounded-md hover:bg-emerald-900 transition whitespace-nowrap cursor-pointer"
+                <Link
+                  href="/admin/master"
+                  className="h-9 px-3 text-xs font-semibold bg-emerald-800 text-white rounded-md hover:bg-emerald-900 transition whitespace-nowrap cursor-pointer inline-flex items-center justify-center"
                 >
                   + Tambah Kegiatan
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -377,54 +422,69 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
-                  {filtered.map((item, idx) => {
-                    const pct =
-                      item.pagu > 0 ? (item.realisasi / item.pagu) * 100 : 0;
-                    return (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-slate-50/80 transition"
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className="py-8 text-center text-slate-400"
                       >
-                        <td className="py-2.5 px-3 text-slate-400 font-semibold">
-                          {idx + 1}
-                        </td>
-                        <td className="py-2.5 px-3 max-w-[240px]">
-                          <span className="text-[11px] font-semibold text-emerald-800 font-mono block">
-                            {item.kode}
-                          </span>
-                          <span className="font-medium text-slate-900 line-clamp-1">
-                            {item.nama}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3 font-medium text-slate-800 whitespace-nowrap">
-                          {item.pj || "Budi Santoso"}
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <Badge
-                            text={item.jenis}
-                            color={item.jenis === "APBN" ? "blue" : "gold"}
-                          />
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-medium whitespace-nowrap">
-                          {fmtRupiah(item.pagu)}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-bold text-emerald-800 whitespace-nowrap">
-                          {fmtRupiah(item.realisasi)}
-                        </td>
-                        <td className="py-2.5 px-3 min-w-[130px]">
-                          <ProgressBar value={pct} color="#236437" />
-                        </td>
-                        <td className="py-2.5 px-3 text-center">
-                          <Badge
-                            text={
-                              item.sudahLapor ? "Sudah Lapor" : "Belum Lapor"
-                            }
-                            color={item.sudahLapor ? "green" : "red"}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
+                        Tidak ada kegiatan yang cocok dengan kriteria pencarian.
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((item, idx) => {
+                      const pct =
+                        item.pagu > 0 ? (item.realisasi / item.pagu) * 100 : 0;
+                      return (
+                        <tr
+                          key={item.id}
+                          className="hover:bg-slate-50/80 transition"
+                        >
+                          <td className="py-2.5 px-3 text-slate-400 font-semibold">
+                            {idx + 1}
+                          </td>
+                          <td className="py-2.5 px-3 max-w-[240px]">
+                            <span className="text-[11px] font-semibold text-emerald-800 font-mono block">
+                              {item.kode}
+                            </span>
+                            <span className="font-medium text-slate-900 line-clamp-1">
+                              {item.nama}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 font-medium text-slate-800 whitespace-nowrap">
+                            {item.pj || (
+                              <span className="text-slate-400 italic">
+                                Belum Ditugaskan
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <Badge
+                              text={item.jenis}
+                              color={item.jenis === "APBN" ? "blue" : "gold"}
+                            />
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-medium whitespace-nowrap">
+                            {fmtRupiah(item.pagu)}
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-bold text-emerald-800 whitespace-nowrap">
+                            {fmtRupiah(item.realisasi)}
+                          </td>
+                          <td className="py-2.5 px-3 min-w-[130px]">
+                            <ProgressBar value={pct} color="#236437" />
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <Badge
+                              text={
+                                item.sudahLapor ? "Sudah Lapor" : "Belum Lapor"
+                              }
+                              color={item.sudahLapor ? "green" : "red"}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>

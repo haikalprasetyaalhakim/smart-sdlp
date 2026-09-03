@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { ManajemenKegiatanPage } from "@/features/admin/manage-activities/components/manajemen-kegiatan-page";
+import { redirect } from "next/navigation";
 
 const PAGE_SIZE = 5;
 const WAJIB_PAGE_SIZE = 5;
@@ -87,6 +88,20 @@ export default async function Page({
       orderBy: { name: "asc" },
     }),
   ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Halaman di URL melebihi data yang tersisa (misal setelah delete) — auto-redirect
+  // ke halaman valid terakhir, bukan tampilkan kosong tanpa cara kembali otomatis.
+  if (page > totalPages) {
+    const next = new URLSearchParams();
+    next.set("page", String(totalPages));
+    if (params.sort) next.set("sort", params.sort);
+    if (params.order) next.set("order", params.order);
+    if (params.q) next.set("q", params.q);
+    if (params.kategori) next.set("kategori", params.kategori);
+    redirect(`/admin/master?${next.toString()}`);
+  }
 
   const belumLaporCount = totalWajibCount - sudahLaporCount;
 

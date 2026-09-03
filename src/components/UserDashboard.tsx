@@ -124,7 +124,7 @@ export function UserDashboard({
             >
               <path d={Icons.input} />
             </svg>
-            + Isi Laporan
+            Isi Laporan
           </Link>
         </div>
       </div>

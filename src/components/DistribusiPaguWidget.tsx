@@ -4,17 +4,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { fmtRupiah, fmtMiliar } from "@/utils/formatters";
 import { cn } from "@/lib/utils";
 import { Activity } from "@/types";
-import { allKegiatan } from "@/data/mockData";
 import { aggregateProgramPagu } from "@/utils/programCategorization";
 import { ProgramDetailModal } from "./ProgramDetailModal";
 
 interface DistribusiPaguWidgetProps {
-  activities?: Activity[];
+  activities: Activity[];
   onNavigate?: (menu: string) => void;
 }
 
 export function DistribusiPaguWidget({
-  activities = allKegiatan,
+  activities,
   onNavigate,
 }: DistribusiPaguWidgetProps) {
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
@@ -33,7 +32,7 @@ export function DistribusiPaguWidget({
   }, [programPaguData]);
 
   const activeSegment = programPaguData.find(
-    (segment) => segment.label === hoveredLabel
+    (segment) => segment.label === hoveredLabel,
   );
 
   const displayLabel = activeSegment?.label ?? "Total Pagu (DIPA)";
@@ -67,11 +66,14 @@ export function DistribusiPaguWidget({
             </h4>
           </div>
           <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-            TA 2026
+            TA {new Date().getFullYear()}
           </span>
         </div>
         <p className="text-xs text-slate-500 mb-2">
-          Proporsi alokasi anggaran Instansi · <span className="text-emerald-700 font-medium">Klik segmen/legend untuk rincian</span>
+          Proporsi alokasi anggaran Instansi ·{" "}
+          <span className="text-emerald-700 font-medium">
+            Klik segmen/legend untuk rincian
+          </span>
         </p>
       </div>
 
@@ -151,21 +153,21 @@ export function DistribusiPaguWidget({
                 "group flex items-center justify-between p-2 rounded-lg transition-all duration-150 cursor-pointer select-none",
                 isHovered
                   ? "bg-slate-100/90 shadow-2xs border border-slate-300/80 scale-[1.02]"
-                  : "hover:bg-slate-100/70 border border-transparent"
+                  : "hover:bg-slate-100/70 border border-transparent",
               )}
             >
               <div className="flex items-center gap-2 min-w-0 pr-2">
                 <span
                   className={cn(
                     "w-2.5 h-2.5 rounded-full flex-shrink-0 transition-transform duration-150",
-                    isHovered ? "scale-125 shadow-xs" : ""
+                    isHovered ? "scale-125 shadow-xs" : "",
                   )}
                   style={{ backgroundColor: d.color }}
                 />
                 <span
                   className={cn(
                     "text-xs truncate transition-colors",
-                    isHovered ? "font-bold text-slate-900" : "text-slate-600"
+                    isHovered ? "font-bold text-slate-900" : "text-slate-600",
                   )}
                   title={d.label}
                 >
@@ -179,7 +181,9 @@ export function DistribusiPaguWidget({
                 <span
                   className={cn(
                     "text-xs whitespace-nowrap transition-colors",
-                    isHovered ? "font-bold text-slate-900" : "font-semibold text-slate-700"
+                    isHovered
+                      ? "font-bold text-slate-900"
+                      : "font-semibold text-slate-700",
                   )}
                 >
                   {fmtRupiah(d.value)}
