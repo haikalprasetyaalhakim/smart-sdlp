@@ -124,7 +124,7 @@ export function UserDashboard({
             >
               <path d={Icons.input} />
             </svg>
-            Isi Laporan
+            + Isi Laporan
           </Link>
         </div>
       </div>
@@ -372,12 +372,12 @@ export function UserDashboard({
         open={!!historyTarget}
         onOpenChange={(open) => !open && setHistoryTarget(null)}
       >
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Riwayat Laporan — {historyTarget?.kode}</DialogTitle>
             <DialogDescription>{historyTarget?.nama}</DialogDescription>
           </DialogHeader>
-          <div className="max-h-[70vh] overflow-y-auto">
+          <div className="max-h-[60vh] overflow-y-auto">
             {historyRows.length === 0 ? (
               <p className="text-xs text-slate-400 text-center py-8">
                 Belum ada riwayat laporan untuk kegiatan ini.
