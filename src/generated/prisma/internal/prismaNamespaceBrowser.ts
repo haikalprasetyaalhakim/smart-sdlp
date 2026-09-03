@@ -56,7 +56,8 @@ export const ModelName = {
   Account: 'Account',
   Verification: 'Verification',
   Kegiatan: 'Kegiatan',
-  Laporan: 'Laporan'
+  Laporan: 'Laporan',
+  AuditLog: 'AuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -179,6 +180,24 @@ export const LaporanScalarFieldEnum = {
 } as const
 
 export type LaporanScalarFieldEnum = (typeof LaporanScalarFieldEnum)[keyof typeof LaporanScalarFieldEnum]
+
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  action: 'action',
+  namaFile: 'namaFile',
+  kodeKegiatan: 'kodeKegiatan',
+  namaKegiatan: 'namaKegiatan',
+  pemilikNama: 'pemilikNama',
+  pemilikEmail: 'pemilikEmail',
+  adminNama: 'adminNama',
+  adminEmail: 'adminEmail',
+  alasan: 'alasan',
+  notifStatus: 'notifStatus',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
 export const SortOrder = {

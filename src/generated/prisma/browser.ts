@@ -47,3 +47,8 @@ export type Kegiatan = Prisma.KegiatanModel
  * 
  */
 export type Laporan = Prisma.LaporanModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel

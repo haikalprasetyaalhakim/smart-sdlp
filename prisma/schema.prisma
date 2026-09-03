@@ -163,3 +163,20 @@ model Laporan {
   @@index([kegiatanId])
   @@map("laporan")
 }
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  action       String   @default("DELETE_LAPORAN")
+  namaFile     String
+  kodeKegiatan String
+  namaKegiatan String
+  pemilikNama  String
+  pemilikEmail String
+  adminNama    String
+  adminEmail   String
+  alasan       String
+  notifStatus  String   @default("Terkirim ke Email")
+  createdAt    DateTime @default(now())
+
+  @@map("audit_log")
+}
