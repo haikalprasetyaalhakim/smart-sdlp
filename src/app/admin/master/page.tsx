@@ -90,14 +90,6 @@ export default async function Page({
 
   const belumLaporCount = totalWajibCount - sudahLaporCount;
 
-  const data = rows.map((k) => ({
-    ...k,
-    pagu: Number(k.pagu),
-    realisasi: Number(k.realisasi),
-    realLalu: k.realLalu !== null ? Number(k.realLalu) : null,
-    realIni: k.realIni !== null ? Number(k.realIni) : null,
-  }));
-
   const serialize = (list: typeof rows) =>
     list.map((k) => ({
       ...k,

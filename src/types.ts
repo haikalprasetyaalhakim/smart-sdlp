@@ -1,7 +1,7 @@
 export type Role = "user" | "admin";
 
 export interface Activity {
-  id: number;
+  id: string;
   kode: string;
   nama: string;
   jenis: "APBN" | "NON-APBN";

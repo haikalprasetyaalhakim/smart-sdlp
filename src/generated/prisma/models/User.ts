@@ -233,6 +233,8 @@ export type UserWhereInput = {
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   kegiatanSebagaiPJ?: Prisma.KegiatanListRelationFilter
+  laporans?: Prisma.LaporanListRelationFilter
+  laporanSubmitted?: Prisma.LaporanListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -250,6 +252,8 @@ export type UserOrderByWithRelationInput = {
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   kegiatanSebagaiPJ?: Prisma.KegiatanOrderByRelationAggregateInput
+  laporans?: Prisma.LaporanOrderByRelationAggregateInput
+  laporanSubmitted?: Prisma.LaporanOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -270,6 +274,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   sessions?: Prisma.SessionListRelationFilter
   accounts?: Prisma.AccountListRelationFilter
   kegiatanSebagaiPJ?: Prisma.KegiatanListRelationFilter
+  laporans?: Prisma.LaporanListRelationFilter
+  laporanSubmitted?: Prisma.LaporanListRelationFilter
 }, "id" | "email" | "nip">
 
 export type UserOrderByWithAggregationInput = {
@@ -321,6 +327,8 @@ export type UserCreateInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   kegiatanSebagaiPJ?: Prisma.KegiatanCreateNestedManyWithoutPjInput
+  laporans?: Prisma.LaporanCreateNestedManyWithoutUserInput
+  laporanSubmitted?: Prisma.LaporanCreateNestedManyWithoutSubmittedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -338,6 +346,8 @@ export type UserUncheckedCreateInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedCreateNestedManyWithoutPjInput
+  laporans?: Prisma.LaporanUncheckedCreateNestedManyWithoutUserInput
+  laporanSubmitted?: Prisma.LaporanUncheckedCreateNestedManyWithoutSubmittedByInput
 }
 
 export type UserUpdateInput = {
@@ -355,6 +365,8 @@ export type UserUpdateInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   kegiatanSebagaiPJ?: Prisma.KegiatanUpdateManyWithoutPjNestedInput
+  laporans?: Prisma.LaporanUpdateManyWithoutUserNestedInput
+  laporanSubmitted?: Prisma.LaporanUpdateManyWithoutSubmittedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -372,6 +384,8 @@ export type UserUncheckedUpdateInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedUpdateManyWithoutPjNestedInput
+  laporans?: Prisma.LaporanUncheckedUpdateManyWithoutUserNestedInput
+  laporanSubmitted?: Prisma.LaporanUncheckedUpdateManyWithoutSubmittedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -532,6 +546,38 @@ export type UserUpdateOneWithoutKegiatanSebagaiPJNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutKegiatanSebagaiPJInput, Prisma.UserUpdateWithoutKegiatanSebagaiPJInput>, Prisma.UserUncheckedUpdateWithoutKegiatanSebagaiPJInput>
 }
 
+export type UserCreateNestedOneWithoutLaporanSubmittedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLaporanSubmittedInput, Prisma.UserUncheckedCreateWithoutLaporanSubmittedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLaporanSubmittedInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutLaporansInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLaporansInput, Prisma.UserUncheckedCreateWithoutLaporansInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLaporansInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutLaporanSubmittedNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLaporanSubmittedInput, Prisma.UserUncheckedCreateWithoutLaporanSubmittedInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLaporanSubmittedInput
+  upsert?: Prisma.UserUpsertWithoutLaporanSubmittedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutLaporanSubmittedInput, Prisma.UserUpdateWithoutLaporanSubmittedInput>, Prisma.UserUncheckedUpdateWithoutLaporanSubmittedInput>
+}
+
+export type UserUpdateOneWithoutLaporansNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLaporansInput, Prisma.UserUncheckedCreateWithoutLaporansInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLaporansInput
+  upsert?: Prisma.UserUpsertWithoutLaporansInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutLaporansInput, Prisma.UserUpdateWithoutLaporansInput>, Prisma.UserUncheckedUpdateWithoutLaporansInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   id?: string
   name: string
@@ -546,6 +592,8 @@ export type UserCreateWithoutSessionsInput = {
   unitKerja?: string | null
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   kegiatanSebagaiPJ?: Prisma.KegiatanCreateNestedManyWithoutPjInput
+  laporans?: Prisma.LaporanCreateNestedManyWithoutUserInput
+  laporanSubmitted?: Prisma.LaporanCreateNestedManyWithoutSubmittedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -562,6 +610,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   unitKerja?: string | null
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedCreateNestedManyWithoutPjInput
+  laporans?: Prisma.LaporanUncheckedCreateNestedManyWithoutUserInput
+  laporanSubmitted?: Prisma.LaporanUncheckedCreateNestedManyWithoutSubmittedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -594,6 +644,8 @@ export type UserUpdateWithoutSessionsInput = {
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   kegiatanSebagaiPJ?: Prisma.KegiatanUpdateManyWithoutPjNestedInput
+  laporans?: Prisma.LaporanUpdateManyWithoutUserNestedInput
+  laporanSubmitted?: Prisma.LaporanUpdateManyWithoutSubmittedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -610,6 +662,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedUpdateManyWithoutPjNestedInput
+  laporans?: Prisma.LaporanUncheckedUpdateManyWithoutUserNestedInput
+  laporanSubmitted?: Prisma.LaporanUncheckedUpdateManyWithoutSubmittedByNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -626,6 +680,8 @@ export type UserCreateWithoutAccountsInput = {
   unitKerja?: string | null
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   kegiatanSebagaiPJ?: Prisma.KegiatanCreateNestedManyWithoutPjInput
+  laporans?: Prisma.LaporanCreateNestedManyWithoutUserInput
+  laporanSubmitted?: Prisma.LaporanCreateNestedManyWithoutSubmittedByInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -642,6 +698,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   unitKerja?: string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedCreateNestedManyWithoutPjInput
+  laporans?: Prisma.LaporanUncheckedCreateNestedManyWithoutUserInput
+  laporanSubmitted?: Prisma.LaporanUncheckedCreateNestedManyWithoutSubmittedByInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -674,6 +732,8 @@ export type UserUpdateWithoutAccountsInput = {
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   kegiatanSebagaiPJ?: Prisma.KegiatanUpdateManyWithoutPjNestedInput
+  laporans?: Prisma.LaporanUpdateManyWithoutUserNestedInput
+  laporanSubmitted?: Prisma.LaporanUpdateManyWithoutSubmittedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -690,6 +750,8 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedUpdateManyWithoutPjNestedInput
+  laporans?: Prisma.LaporanUncheckedUpdateManyWithoutUserNestedInput
+  laporanSubmitted?: Prisma.LaporanUncheckedUpdateManyWithoutSubmittedByNestedInput
 }
 
 export type UserCreateWithoutKegiatanSebagaiPJInput = {
@@ -706,6 +768,8 @@ export type UserCreateWithoutKegiatanSebagaiPJInput = {
   unitKerja?: string | null
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  laporans?: Prisma.LaporanCreateNestedManyWithoutUserInput
+  laporanSubmitted?: Prisma.LaporanCreateNestedManyWithoutSubmittedByInput
 }
 
 export type UserUncheckedCreateWithoutKegiatanSebagaiPJInput = {
@@ -722,6 +786,8 @@ export type UserUncheckedCreateWithoutKegiatanSebagaiPJInput = {
   unitKerja?: string | null
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  laporans?: Prisma.LaporanUncheckedCreateNestedManyWithoutUserInput
+  laporanSubmitted?: Prisma.LaporanUncheckedCreateNestedManyWithoutSubmittedByInput
 }
 
 export type UserCreateOrConnectWithoutKegiatanSebagaiPJInput = {
@@ -754,6 +820,8 @@ export type UserUpdateWithoutKegiatanSebagaiPJInput = {
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  laporans?: Prisma.LaporanUpdateManyWithoutUserNestedInput
+  laporanSubmitted?: Prisma.LaporanUpdateManyWithoutSubmittedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutKegiatanSebagaiPJInput = {
@@ -770,6 +838,184 @@ export type UserUncheckedUpdateWithoutKegiatanSebagaiPJInput = {
   unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  laporans?: Prisma.LaporanUncheckedUpdateManyWithoutUserNestedInput
+  laporanSubmitted?: Prisma.LaporanUncheckedUpdateManyWithoutSubmittedByNestedInput
+}
+
+export type UserCreateWithoutLaporanSubmittedInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: $Enums.UserRole
+  nip?: string | null
+  jabatan?: string | null
+  unitKerja?: string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanCreateNestedManyWithoutPjInput
+  laporans?: Prisma.LaporanCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutLaporanSubmittedInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: $Enums.UserRole
+  nip?: string | null
+  jabatan?: string | null
+  unitKerja?: string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedCreateNestedManyWithoutPjInput
+  laporans?: Prisma.LaporanUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutLaporanSubmittedInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutLaporanSubmittedInput, Prisma.UserUncheckedCreateWithoutLaporanSubmittedInput>
+}
+
+export type UserCreateWithoutLaporansInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: $Enums.UserRole
+  nip?: string | null
+  jabatan?: string | null
+  unitKerja?: string | null
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanCreateNestedManyWithoutPjInput
+  laporanSubmitted?: Prisma.LaporanCreateNestedManyWithoutSubmittedByInput
+}
+
+export type UserUncheckedCreateWithoutLaporansInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: $Enums.UserRole
+  nip?: string | null
+  jabatan?: string | null
+  unitKerja?: string | null
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedCreateNestedManyWithoutPjInput
+  laporanSubmitted?: Prisma.LaporanUncheckedCreateNestedManyWithoutSubmittedByInput
+}
+
+export type UserCreateOrConnectWithoutLaporansInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutLaporansInput, Prisma.UserUncheckedCreateWithoutLaporansInput>
+}
+
+export type UserUpsertWithoutLaporanSubmittedInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutLaporanSubmittedInput, Prisma.UserUncheckedUpdateWithoutLaporanSubmittedInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutLaporanSubmittedInput, Prisma.UserUncheckedCreateWithoutLaporanSubmittedInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutLaporanSubmittedInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutLaporanSubmittedInput, Prisma.UserUncheckedUpdateWithoutLaporanSubmittedInput>
+}
+
+export type UserUpdateWithoutLaporanSubmittedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  nip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  jabatan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUpdateManyWithoutPjNestedInput
+  laporans?: Prisma.LaporanUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutLaporanSubmittedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  nip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  jabatan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedUpdateManyWithoutPjNestedInput
+  laporans?: Prisma.LaporanUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserUpsertWithoutLaporansInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutLaporansInput, Prisma.UserUncheckedUpdateWithoutLaporansInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutLaporansInput, Prisma.UserUncheckedCreateWithoutLaporansInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutLaporansInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutLaporansInput, Prisma.UserUncheckedUpdateWithoutLaporansInput>
+}
+
+export type UserUpdateWithoutLaporansInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  nip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  jabatan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUpdateManyWithoutPjNestedInput
+  laporanSubmitted?: Prisma.LaporanUpdateManyWithoutSubmittedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutLaporansInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  nip?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  jabatan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  unitKerja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  kegiatanSebagaiPJ?: Prisma.KegiatanUncheckedUpdateManyWithoutPjNestedInput
+  laporanSubmitted?: Prisma.LaporanUncheckedUpdateManyWithoutSubmittedByNestedInput
 }
 
 
@@ -781,12 +1027,16 @@ export type UserCountOutputType = {
   sessions: number
   accounts: number
   kegiatanSebagaiPJ: number
+  laporans: number
+  laporanSubmitted: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   kegiatanSebagaiPJ?: boolean | UserCountOutputTypeCountKegiatanSebagaiPJArgs
+  laporans?: boolean | UserCountOutputTypeCountLaporansArgs
+  laporanSubmitted?: boolean | UserCountOutputTypeCountLaporanSubmittedArgs
 }
 
 /**
@@ -820,6 +1070,20 @@ export type UserCountOutputTypeCountKegiatanSebagaiPJArgs<ExtArgs extends runtim
   where?: Prisma.KegiatanWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountLaporansArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LaporanWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountLaporanSubmittedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LaporanWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -836,6 +1100,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   kegiatanSebagaiPJ?: boolean | Prisma.User$kegiatanSebagaiPJArgs<ExtArgs>
+  laporans?: boolean | Prisma.User$laporansArgs<ExtArgs>
+  laporanSubmitted?: boolean | Prisma.User$laporanSubmittedArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -886,6 +1152,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   kegiatanSebagaiPJ?: boolean | Prisma.User$kegiatanSebagaiPJArgs<ExtArgs>
+  laporans?: boolean | Prisma.User$laporansArgs<ExtArgs>
+  laporanSubmitted?: boolean | Prisma.User$laporanSubmittedArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -897,6 +1165,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     kegiatanSebagaiPJ: Prisma.$KegiatanPayload<ExtArgs>[]
+    laporans: Prisma.$LaporanPayload<ExtArgs>[]
+    laporanSubmitted: Prisma.$LaporanPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1307,6 +1577,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   accounts<T extends Prisma.User$accountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   kegiatanSebagaiPJ<T extends Prisma.User$kegiatanSebagaiPJArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$kegiatanSebagaiPJArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KegiatanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  laporans<T extends Prisma.User$laporansArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$laporansArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LaporanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  laporanSubmitted<T extends Prisma.User$laporanSubmittedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$laporanSubmittedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LaporanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1809,6 +2081,54 @@ export type User$kegiatanSebagaiPJArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.KegiatanScalarFieldEnum | Prisma.KegiatanScalarFieldEnum[]
+}
+
+/**
+ * User.laporans
+ */
+export type User$laporansArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Laporan
+   */
+  select?: Prisma.LaporanSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Laporan
+   */
+  omit?: Prisma.LaporanOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LaporanInclude<ExtArgs> | null
+  where?: Prisma.LaporanWhereInput
+  orderBy?: Prisma.LaporanOrderByWithRelationInput | Prisma.LaporanOrderByWithRelationInput[]
+  cursor?: Prisma.LaporanWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LaporanScalarFieldEnum | Prisma.LaporanScalarFieldEnum[]
+}
+
+/**
+ * User.laporanSubmitted
+ */
+export type User$laporanSubmittedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Laporan
+   */
+  select?: Prisma.LaporanSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Laporan
+   */
+  omit?: Prisma.LaporanOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LaporanInclude<ExtArgs> | null
+  where?: Prisma.LaporanWhereInput
+  orderBy?: Prisma.LaporanOrderByWithRelationInput | Prisma.LaporanOrderByWithRelationInput[]
+  cursor?: Prisma.LaporanWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LaporanScalarFieldEnum | Prisma.LaporanScalarFieldEnum[]
 }
 
 /**

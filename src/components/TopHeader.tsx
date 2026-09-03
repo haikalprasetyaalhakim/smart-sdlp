@@ -41,7 +41,8 @@ const smartNotifications: UiNotificationItem[] = [
   {
     id: "1",
     title: "Laporan Masuk",
-    description: "PJ Budi Santoso telah mengirimkan laporan realisasi Agustus 2026.",
+    description:
+      "PJ Budi Santoso telah mengirimkan laporan realisasi Agustus 2026.",
     time: "10m yang lalu",
     targetMenu: "arsip-sp2d",
   },
@@ -110,13 +111,20 @@ export function TopHeader({
   };
 
   const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .filter((n) => !n.startsWith("Ir.") && !n.startsWith("Dr.") && !n.startsWith("Drs."))
-      .slice(0, 2)
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase() || name.substring(0, 2).toUpperCase();
+    return (
+      name
+        .split(" ")
+        .filter(
+          (n) =>
+            !n.startsWith("Ir.") &&
+            !n.startsWith("Dr.") &&
+            !n.startsWith("Drs."),
+        )
+        .slice(0, 2)
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase() || name.substring(0, 2).toUpperCase()
+    );
   };
 
   return (
@@ -147,7 +155,8 @@ export function TopHeader({
               SMART · BRMP SDLAHAN / {breadcrumbMap[activeMenu] || "Dashboard"}
             </p>
             <h1 className="text-xs sm:text-sm font-bold text-white truncate leading-tight mt-0.5">
-              {breadcrumbMap[activeMenu] || "SMART — Sistem Monitoring & Tracking"}
+              {breadcrumbMap[activeMenu] ||
+                "SMART — Sistem Monitoring & Tracking"}
             </h1>
           </div>
         </div>
@@ -188,7 +197,10 @@ export function TopHeader({
                   </span>
                 </div>
                 <p className="text-[9.5px] text-emerald-300/70 leading-tight truncate max-w-[120px]">
-                  {userProfile.jabatan || (isAdmin ? "Pusat Data & Sistem Informasi" : "PJ Lahan Rawa")}
+                  {userProfile.jabatan ||
+                    (isAdmin
+                      ? "Pusat Data & Sistem Informasi"
+                      : "PJ Lahan Rawa")}
                 </p>
               </div>
 
