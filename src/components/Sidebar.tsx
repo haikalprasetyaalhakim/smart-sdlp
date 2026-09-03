@@ -6,7 +6,7 @@ import { MenuItem, Role } from "@/types";
 import { Icons } from "@/utils/formatters";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const userMenu: MenuItem[] = [
@@ -66,6 +66,7 @@ export function Sidebar({ role }: SidebarProps) {
   const isAdmin = role === "admin";
   const menu = isAdmin ? adminMenu : userMenu;
   const logoSrc = kemEntanLogo?.src || kemEntanLogo;
+  const router = useRouter();
 
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -180,7 +181,13 @@ export function Sidebar({ role }: SidebarProps) {
 
         <button
           onClick={() => {
-            signOut();
+            signOut({
+              fetchOptions: {
+                onSuccess: () => {
+                  router.push("/");
+                },
+              },
+            });
           }}
           className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded bg-emerald-950/40 hover:bg-rose-900/40 text-emerald-200 hover:text-rose-200 text-[11px] font-semibold transition cursor-pointer"
         >

@@ -66,3 +66,8 @@ export type Verification = Prisma.VerificationModel
  * 
  */
 export type Kegiatan = Prisma.KegiatanModel
+/**
+ * Model Laporan
+ * 
+ */
+export type Laporan = Prisma.LaporanModel

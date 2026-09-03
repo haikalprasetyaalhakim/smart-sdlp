@@ -19,6 +19,7 @@ import {
   Line,
   CartesianGrid,
 } from "recharts";
+import Link from "next/link";
 
 interface AdminDashboardProps {
   activities: Activity[];
@@ -63,7 +64,10 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-xs font-semibold transition cursor-pointer">
+          <Link
+            href="/admin/master"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-xs font-semibold transition cursor-pointer"
+          >
             <svg
               width={14}
               height={14}
@@ -75,8 +79,11 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
               <path d={Icons.users} />
             </svg>
             Kelola Kegiatan
-          </button>
-          <button className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-md text-xs font-semibold shadow-xs transition cursor-pointer">
+          </Link>
+          <Link
+            href="/admin/cetak"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-md text-xs font-semibold shadow-xs transition cursor-pointer"
+          >
             <svg
               width={14}
               height={14}
@@ -88,7 +95,7 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
               <path d={Icons.print} />
             </svg>
             Cetak Dokumen &amp; Laporan
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -133,7 +140,7 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
             ].map((t) => (
               <button
                 key={t.id}
-                onClick={() => setActiveTab(t.id as any)}
+                // onClick={() => setActiveTab(t.id)}
                 className={`whitespace-nowrap cursor-pointer transition-all duration-150 ${
                   activeTab === t.id
                     ? "bg-white text-emerald-950 font-semibold shadow-sm rounded-lg px-4 py-2 text-xs"
@@ -199,7 +206,7 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
                         tickFormatter={(v) => `${(v / 1e9).toFixed(1)}M`}
                       />
                       <Tooltip
-                        formatter={(val: any) => [fmtRupiah(Number(val)), ""]}
+                        // formatter={(val: any) => [fmtRupiah(Number(val)), ""]}
                         contentStyle={{
                           fontSize: 12,
                           borderRadius: 8,
@@ -280,7 +287,7 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
                         unit="%"
                         domain={[0, 100]}
                       />
-                      <Tooltip formatter={(val: any) => [`${val}%`, ""]} />
+                      {/* <Tooltip formatter={(val: any) => [`${val}%`, ""]} /> */}
                       <Legend wrapperStyle={{ fontSize: 11 }} />
                       <Line
                         type="monotone"
@@ -337,7 +344,7 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <select
                   value={filterJenis}
-                  onChange={(e) => setFilterJenis(e.target.value as any)}
+                  // onChange={(e) => setFilterJenis(e.target.value as any)}
                   className="h-9 px-3 text-xs bg-white border border-slate-300 rounded-md font-medium text-slate-700"
                 >
                   <option value="ALL">Semua Jenis Anggaran</option>
@@ -345,7 +352,7 @@ export function AdminDashboard({ activities }: AdminDashboardProps) {
                   <option value="NON-APBN">NON-APBN Saja</option>
                 </select>
                 <button
-                  onClick={() => onNavigate("master")}
+                  // onClick={() => onNavigate("master")}
                   className="h-9 px-3 text-xs font-semibold bg-emerald-800 text-white rounded-md hover:bg-emerald-900 transition whitespace-nowrap cursor-pointer"
                 >
                   + Tambah Kegiatan

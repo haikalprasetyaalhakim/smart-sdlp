@@ -14,6 +14,7 @@ import {
 import {
   createKegiatan,
   deleteKegiatan,
+  toggleStatusAnggaran,
   toggleWajibLapor,
   updateKegiatan,
 } from "@/features/kegiatan/actions";
@@ -196,6 +197,40 @@ export function ManajemenKegiatanPage({
   const [searchInput, setSearchInput] = useState(searchParams.get("q") ?? "");
 
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+
+  const [statusPendingIds, setStatusPendingIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [statusOverride, setStatusOverride] = useState<
+    Record<string, "DIBUKA" | "DIBLOKIR">
+  >({});
+
+  const getStatusValue = (k: KegiatanFromDb) =>
+    statusOverride[k.id] ?? k.statusAnggaran;
+
+  const handleToggleStatus = (k: KegiatanFromDb) => {
+    const newValue = getStatusValue(k) === "DIBUKA" ? "DIBLOKIR" : "DIBUKA";
+
+    setStatusOverride((prev) => ({ ...prev, [k.id]: newValue }));
+    setStatusPendingIds((prev) => new Set(prev).add(k.id));
+
+    toggleStatusAnggaran(k.id, newValue)
+      .then((result) => {
+        if (!result.success) {
+          setStatusOverride((prev) => ({ ...prev, [k.id]: getStatusValue(k) }));
+          toast.error(`Gagal mengubah status "${k.nama}": ${result.error}`);
+          return;
+        }
+        router.refresh();
+      })
+      .finally(() => {
+        setStatusPendingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(k.id);
+          return next;
+        });
+      });
+  };
 
   // ── URL state helpers ───────────────────────────────────────────────────
   const updateParams = (updates: Record<string, string | number | null>) => {
@@ -467,6 +502,9 @@ export function ManajemenKegiatanPage({
                       />
                       <th className="py-2.5 px-3 min-w-45">Program Utama</th>
                       <th className="py-2.5 px-3">Jenis</th>
+                      <th className="py-2.5 px-3 text-center">
+                        Status Anggaran
+                      </th>
                       <th className="py-2.5 px-3">PJ & Kontak</th>
                       <SortableHeader
                         column="pagu"
@@ -483,7 +521,7 @@ export function ManajemenKegiatanPage({
                     {data.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={8}
+                          colSpan={9}
                           className="py-8 text-center text-slate-400"
                         >
                           Tidak ada data kegiatan yang cocok dengan kriteria
@@ -532,6 +570,22 @@ export function ManajemenKegiatanPage({
                                 text={k.jenis}
                                 color={k.jenis === "APBN" ? "blue" : "gold"}
                               />
+                            </td>
+                            <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                              <button
+                                onClick={() => handleToggleStatus(k)}
+                                disabled={statusPendingIds.has(k.id)}
+                                className={`px-2.5 py-1 text-[10px] font-bold rounded-full border transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                                  getStatusValue(k) === "DIBUKA"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                                    : "bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100"
+                                }`}
+                                title="Klik untuk mengubah status"
+                              >
+                                {getStatusValue(k) === "DIBUKA"
+                                  ? "● Dibuka"
+                                  : "● Diblokir"}
+                              </button>
                             </td>
                             <td className="py-2.5 px-3 whitespace-nowrap">
                               <span className="font-semibold text-slate-800">

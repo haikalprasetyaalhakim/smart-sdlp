@@ -272,3 +272,43 @@ export async function toggleWajibLapor(
 
   return { success: true, id, wajib };
 }
+
+type ToggleStatusResult =
+  | { success: true; id: string; statusAnggaran: "DIBUKA" | "DIBLOKIR" }
+  | { success: false; error: string };
+
+export async function toggleStatusAnggaran(
+  id: string,
+  statusAnggaran: "DIBUKA" | "DIBLOKIR",
+): Promise<ToggleStatusResult> {
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session) {
+    return { success: false, error: "Sesi tidak valid, silakan login ulang." };
+  }
+  if (session.user.role?.toLowerCase() !== "admin") {
+    return {
+      success: false,
+      error: "Hanya admin yang bisa mengubah status anggaran.",
+    };
+  }
+
+  const target = await prisma.kegiatan.findUnique({ where: { id } });
+  if (!target) {
+    return {
+      success: false,
+      error: "Kegiatan tidak ditemukan (mungkin sudah dihapus).",
+    };
+  }
+
+  await prisma.kegiatan.update({
+    where: { id },
+    data: { statusAnggaran },
+  });
+
+  revalidatePath("/admin/master");
+  revalidatePath("/input");
+  revalidatePath("/dashboard");
+
+  return { success: true, id, statusAnggaran };
+}
