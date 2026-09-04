@@ -600,13 +600,6 @@ export type LaporanSumOrderByAggregateInput = {
   realisasi?: Prisma.SortOrder
 }
 
-export type LaporanCreateNestedManyWithoutUserInput = {
-  create?: Prisma.XOR<Prisma.LaporanCreateWithoutUserInput, Prisma.LaporanUncheckedCreateWithoutUserInput> | Prisma.LaporanCreateWithoutUserInput[] | Prisma.LaporanUncheckedCreateWithoutUserInput[]
-  connectOrCreate?: Prisma.LaporanCreateOrConnectWithoutUserInput | Prisma.LaporanCreateOrConnectWithoutUserInput[]
-  createMany?: Prisma.LaporanCreateManyUserInputEnvelope
-  connect?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
-}
-
 export type LaporanCreateNestedManyWithoutSubmittedByInput = {
   create?: Prisma.XOR<Prisma.LaporanCreateWithoutSubmittedByInput, Prisma.LaporanUncheckedCreateWithoutSubmittedByInput> | Prisma.LaporanCreateWithoutSubmittedByInput[] | Prisma.LaporanUncheckedCreateWithoutSubmittedByInput[]
   connectOrCreate?: Prisma.LaporanCreateOrConnectWithoutSubmittedByInput | Prisma.LaporanCreateOrConnectWithoutSubmittedByInput[]
@@ -614,7 +607,7 @@ export type LaporanCreateNestedManyWithoutSubmittedByInput = {
   connect?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
 }
 
-export type LaporanUncheckedCreateNestedManyWithoutUserInput = {
+export type LaporanCreateNestedManyWithoutUserInput = {
   create?: Prisma.XOR<Prisma.LaporanCreateWithoutUserInput, Prisma.LaporanUncheckedCreateWithoutUserInput> | Prisma.LaporanCreateWithoutUserInput[] | Prisma.LaporanUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.LaporanCreateOrConnectWithoutUserInput | Prisma.LaporanCreateOrConnectWithoutUserInput[]
   createMany?: Prisma.LaporanCreateManyUserInputEnvelope
@@ -628,18 +621,11 @@ export type LaporanUncheckedCreateNestedManyWithoutSubmittedByInput = {
   connect?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
 }
 
-export type LaporanUpdateManyWithoutUserNestedInput = {
+export type LaporanUncheckedCreateNestedManyWithoutUserInput = {
   create?: Prisma.XOR<Prisma.LaporanCreateWithoutUserInput, Prisma.LaporanUncheckedCreateWithoutUserInput> | Prisma.LaporanCreateWithoutUserInput[] | Prisma.LaporanUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.LaporanCreateOrConnectWithoutUserInput | Prisma.LaporanCreateOrConnectWithoutUserInput[]
-  upsert?: Prisma.LaporanUpsertWithWhereUniqueWithoutUserInput | Prisma.LaporanUpsertWithWhereUniqueWithoutUserInput[]
   createMany?: Prisma.LaporanCreateManyUserInputEnvelope
-  set?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
-  disconnect?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
-  delete?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
   connect?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
-  update?: Prisma.LaporanUpdateWithWhereUniqueWithoutUserInput | Prisma.LaporanUpdateWithWhereUniqueWithoutUserInput[]
-  updateMany?: Prisma.LaporanUpdateManyWithWhereWithoutUserInput | Prisma.LaporanUpdateManyWithWhereWithoutUserInput[]
-  deleteMany?: Prisma.LaporanScalarWhereInput | Prisma.LaporanScalarWhereInput[]
 }
 
 export type LaporanUpdateManyWithoutSubmittedByNestedInput = {
@@ -656,7 +642,7 @@ export type LaporanUpdateManyWithoutSubmittedByNestedInput = {
   deleteMany?: Prisma.LaporanScalarWhereInput | Prisma.LaporanScalarWhereInput[]
 }
 
-export type LaporanUncheckedUpdateManyWithoutUserNestedInput = {
+export type LaporanUpdateManyWithoutUserNestedInput = {
   create?: Prisma.XOR<Prisma.LaporanCreateWithoutUserInput, Prisma.LaporanUncheckedCreateWithoutUserInput> | Prisma.LaporanCreateWithoutUserInput[] | Prisma.LaporanUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.LaporanCreateOrConnectWithoutUserInput | Prisma.LaporanCreateOrConnectWithoutUserInput[]
   upsert?: Prisma.LaporanUpsertWithWhereUniqueWithoutUserInput | Prisma.LaporanUpsertWithWhereUniqueWithoutUserInput[]
@@ -681,6 +667,20 @@ export type LaporanUncheckedUpdateManyWithoutSubmittedByNestedInput = {
   connect?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
   update?: Prisma.LaporanUpdateWithWhereUniqueWithoutSubmittedByInput | Prisma.LaporanUpdateWithWhereUniqueWithoutSubmittedByInput[]
   updateMany?: Prisma.LaporanUpdateManyWithWhereWithoutSubmittedByInput | Prisma.LaporanUpdateManyWithWhereWithoutSubmittedByInput[]
+  deleteMany?: Prisma.LaporanScalarWhereInput | Prisma.LaporanScalarWhereInput[]
+}
+
+export type LaporanUncheckedUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.LaporanCreateWithoutUserInput, Prisma.LaporanUncheckedCreateWithoutUserInput> | Prisma.LaporanCreateWithoutUserInput[] | Prisma.LaporanUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.LaporanCreateOrConnectWithoutUserInput | Prisma.LaporanCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.LaporanUpsertWithWhereUniqueWithoutUserInput | Prisma.LaporanUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.LaporanCreateManyUserInputEnvelope
+  set?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
+  disconnect?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
+  delete?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
+  connect?: Prisma.LaporanWhereUniqueInput | Prisma.LaporanWhereUniqueInput[]
+  update?: Prisma.LaporanUpdateWithWhereUniqueWithoutUserInput | Prisma.LaporanUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.LaporanUpdateManyWithWhereWithoutUserInput | Prisma.LaporanUpdateManyWithWhereWithoutUserInput[]
   deleteMany?: Prisma.LaporanScalarWhereInput | Prisma.LaporanScalarWhereInput[]
 }
 
@@ -742,48 +742,6 @@ export type FloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type LaporanCreateWithoutUserInput = {
-  id?: string
-  periodeBulan: number
-  periodeTahun: number
-  uraian: string
-  fisik: number
-  statusAnggaran?: $Enums.StatusAnggaran
-  realLalu: bigint | number
-  realIni: bigint | number
-  realisasi: bigint | number
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  kegiatan: Prisma.KegiatanCreateNestedOneWithoutLaporanInput
-  submittedBy?: Prisma.UserCreateNestedOneWithoutLaporanSubmittedInput
-}
-
-export type LaporanUncheckedCreateWithoutUserInput = {
-  id?: string
-  kegiatanId: string
-  periodeBulan: number
-  periodeTahun: number
-  uraian: string
-  fisik: number
-  statusAnggaran?: $Enums.StatusAnggaran
-  realLalu: bigint | number
-  realIni: bigint | number
-  realisasi: bigint | number
-  submittedById?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
-export type LaporanCreateOrConnectWithoutUserInput = {
-  where: Prisma.LaporanWhereUniqueInput
-  create: Prisma.XOR<Prisma.LaporanCreateWithoutUserInput, Prisma.LaporanUncheckedCreateWithoutUserInput>
-}
-
-export type LaporanCreateManyUserInputEnvelope = {
-  data: Prisma.LaporanCreateManyUserInput | Prisma.LaporanCreateManyUserInput[]
-  skipDuplicates?: boolean
-}
-
 export type LaporanCreateWithoutSubmittedByInput = {
   id?: string
   periodeBulan: number
@@ -826,20 +784,62 @@ export type LaporanCreateManySubmittedByInputEnvelope = {
   skipDuplicates?: boolean
 }
 
-export type LaporanUpsertWithWhereUniqueWithoutUserInput = {
+export type LaporanCreateWithoutUserInput = {
+  id?: string
+  periodeBulan: number
+  periodeTahun: number
+  uraian: string
+  fisik: number
+  statusAnggaran?: $Enums.StatusAnggaran
+  realLalu: bigint | number
+  realIni: bigint | number
+  realisasi: bigint | number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  kegiatan: Prisma.KegiatanCreateNestedOneWithoutLaporanInput
+  submittedBy?: Prisma.UserCreateNestedOneWithoutLaporanSubmittedInput
+}
+
+export type LaporanUncheckedCreateWithoutUserInput = {
+  id?: string
+  kegiatanId: string
+  periodeBulan: number
+  periodeTahun: number
+  uraian: string
+  fisik: number
+  statusAnggaran?: $Enums.StatusAnggaran
+  realLalu: bigint | number
+  realIni: bigint | number
+  realisasi: bigint | number
+  submittedById?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type LaporanCreateOrConnectWithoutUserInput = {
   where: Prisma.LaporanWhereUniqueInput
-  update: Prisma.XOR<Prisma.LaporanUpdateWithoutUserInput, Prisma.LaporanUncheckedUpdateWithoutUserInput>
   create: Prisma.XOR<Prisma.LaporanCreateWithoutUserInput, Prisma.LaporanUncheckedCreateWithoutUserInput>
 }
 
-export type LaporanUpdateWithWhereUniqueWithoutUserInput = {
-  where: Prisma.LaporanWhereUniqueInput
-  data: Prisma.XOR<Prisma.LaporanUpdateWithoutUserInput, Prisma.LaporanUncheckedUpdateWithoutUserInput>
+export type LaporanCreateManyUserInputEnvelope = {
+  data: Prisma.LaporanCreateManyUserInput | Prisma.LaporanCreateManyUserInput[]
+  skipDuplicates?: boolean
 }
 
-export type LaporanUpdateManyWithWhereWithoutUserInput = {
+export type LaporanUpsertWithWhereUniqueWithoutSubmittedByInput = {
+  where: Prisma.LaporanWhereUniqueInput
+  update: Prisma.XOR<Prisma.LaporanUpdateWithoutSubmittedByInput, Prisma.LaporanUncheckedUpdateWithoutSubmittedByInput>
+  create: Prisma.XOR<Prisma.LaporanCreateWithoutSubmittedByInput, Prisma.LaporanUncheckedCreateWithoutSubmittedByInput>
+}
+
+export type LaporanUpdateWithWhereUniqueWithoutSubmittedByInput = {
+  where: Prisma.LaporanWhereUniqueInput
+  data: Prisma.XOR<Prisma.LaporanUpdateWithoutSubmittedByInput, Prisma.LaporanUncheckedUpdateWithoutSubmittedByInput>
+}
+
+export type LaporanUpdateManyWithWhereWithoutSubmittedByInput = {
   where: Prisma.LaporanScalarWhereInput
-  data: Prisma.XOR<Prisma.LaporanUpdateManyMutationInput, Prisma.LaporanUncheckedUpdateManyWithoutUserInput>
+  data: Prisma.XOR<Prisma.LaporanUpdateManyMutationInput, Prisma.LaporanUncheckedUpdateManyWithoutSubmittedByInput>
 }
 
 export type LaporanScalarWhereInput = {
@@ -862,20 +862,20 @@ export type LaporanScalarWhereInput = {
   userId?: Prisma.StringNullableFilter<"Laporan"> | string | null
 }
 
-export type LaporanUpsertWithWhereUniqueWithoutSubmittedByInput = {
+export type LaporanUpsertWithWhereUniqueWithoutUserInput = {
   where: Prisma.LaporanWhereUniqueInput
-  update: Prisma.XOR<Prisma.LaporanUpdateWithoutSubmittedByInput, Prisma.LaporanUncheckedUpdateWithoutSubmittedByInput>
-  create: Prisma.XOR<Prisma.LaporanCreateWithoutSubmittedByInput, Prisma.LaporanUncheckedCreateWithoutSubmittedByInput>
+  update: Prisma.XOR<Prisma.LaporanUpdateWithoutUserInput, Prisma.LaporanUncheckedUpdateWithoutUserInput>
+  create: Prisma.XOR<Prisma.LaporanCreateWithoutUserInput, Prisma.LaporanUncheckedCreateWithoutUserInput>
 }
 
-export type LaporanUpdateWithWhereUniqueWithoutSubmittedByInput = {
+export type LaporanUpdateWithWhereUniqueWithoutUserInput = {
   where: Prisma.LaporanWhereUniqueInput
-  data: Prisma.XOR<Prisma.LaporanUpdateWithoutSubmittedByInput, Prisma.LaporanUncheckedUpdateWithoutSubmittedByInput>
+  data: Prisma.XOR<Prisma.LaporanUpdateWithoutUserInput, Prisma.LaporanUncheckedUpdateWithoutUserInput>
 }
 
-export type LaporanUpdateManyWithWhereWithoutSubmittedByInput = {
+export type LaporanUpdateManyWithWhereWithoutUserInput = {
   where: Prisma.LaporanScalarWhereInput
-  data: Prisma.XOR<Prisma.LaporanUpdateManyMutationInput, Prisma.LaporanUncheckedUpdateManyWithoutSubmittedByInput>
+  data: Prisma.XOR<Prisma.LaporanUpdateManyMutationInput, Prisma.LaporanUncheckedUpdateManyWithoutUserInput>
 }
 
 export type LaporanCreateWithoutKegiatanInput = {
@@ -936,22 +936,6 @@ export type LaporanUpdateManyWithWhereWithoutKegiatanInput = {
   data: Prisma.XOR<Prisma.LaporanUpdateManyMutationInput, Prisma.LaporanUncheckedUpdateManyWithoutKegiatanInput>
 }
 
-export type LaporanCreateManyUserInput = {
-  id?: string
-  kegiatanId: string
-  periodeBulan: number
-  periodeTahun: number
-  uraian: string
-  fisik: number
-  statusAnggaran?: $Enums.StatusAnggaran
-  realLalu: bigint | number
-  realIni: bigint | number
-  realisasi: bigint | number
-  submittedById?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
 export type LaporanCreateManySubmittedByInput = {
   id?: string
   kegiatanId: string
@@ -968,52 +952,20 @@ export type LaporanCreateManySubmittedByInput = {
   userId?: string | null
 }
 
-export type LaporanUpdateWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  periodeBulan?: Prisma.IntFieldUpdateOperationsInput | number
-  periodeTahun?: Prisma.IntFieldUpdateOperationsInput | number
-  uraian?: Prisma.StringFieldUpdateOperationsInput | string
-  fisik?: Prisma.FloatFieldUpdateOperationsInput | number
-  statusAnggaran?: Prisma.EnumStatusAnggaranFieldUpdateOperationsInput | $Enums.StatusAnggaran
-  realLalu?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  realIni?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  realisasi?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  kegiatan?: Prisma.KegiatanUpdateOneRequiredWithoutLaporanNestedInput
-  submittedBy?: Prisma.UserUpdateOneWithoutLaporanSubmittedNestedInput
-}
-
-export type LaporanUncheckedUpdateWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  kegiatanId?: Prisma.StringFieldUpdateOperationsInput | string
-  periodeBulan?: Prisma.IntFieldUpdateOperationsInput | number
-  periodeTahun?: Prisma.IntFieldUpdateOperationsInput | number
-  uraian?: Prisma.StringFieldUpdateOperationsInput | string
-  fisik?: Prisma.FloatFieldUpdateOperationsInput | number
-  statusAnggaran?: Prisma.EnumStatusAnggaranFieldUpdateOperationsInput | $Enums.StatusAnggaran
-  realLalu?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  realIni?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  realisasi?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  submittedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type LaporanUncheckedUpdateManyWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  kegiatanId?: Prisma.StringFieldUpdateOperationsInput | string
-  periodeBulan?: Prisma.IntFieldUpdateOperationsInput | number
-  periodeTahun?: Prisma.IntFieldUpdateOperationsInput | number
-  uraian?: Prisma.StringFieldUpdateOperationsInput | string
-  fisik?: Prisma.FloatFieldUpdateOperationsInput | number
-  statusAnggaran?: Prisma.EnumStatusAnggaranFieldUpdateOperationsInput | $Enums.StatusAnggaran
-  realLalu?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  realIni?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  realisasi?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  submittedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+export type LaporanCreateManyUserInput = {
+  id?: string
+  kegiatanId: string
+  periodeBulan: number
+  periodeTahun: number
+  uraian: string
+  fisik: number
+  statusAnggaran?: $Enums.StatusAnggaran
+  realLalu: bigint | number
+  realIni: bigint | number
+  realisasi: bigint | number
+  submittedById?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type LaporanUpdateWithoutSubmittedByInput = {
@@ -1062,6 +1014,54 @@ export type LaporanUncheckedUpdateManyWithoutSubmittedByInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type LaporanUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  periodeBulan?: Prisma.IntFieldUpdateOperationsInput | number
+  periodeTahun?: Prisma.IntFieldUpdateOperationsInput | number
+  uraian?: Prisma.StringFieldUpdateOperationsInput | string
+  fisik?: Prisma.FloatFieldUpdateOperationsInput | number
+  statusAnggaran?: Prisma.EnumStatusAnggaranFieldUpdateOperationsInput | $Enums.StatusAnggaran
+  realLalu?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  realIni?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  realisasi?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  kegiatan?: Prisma.KegiatanUpdateOneRequiredWithoutLaporanNestedInput
+  submittedBy?: Prisma.UserUpdateOneWithoutLaporanSubmittedNestedInput
+}
+
+export type LaporanUncheckedUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  kegiatanId?: Prisma.StringFieldUpdateOperationsInput | string
+  periodeBulan?: Prisma.IntFieldUpdateOperationsInput | number
+  periodeTahun?: Prisma.IntFieldUpdateOperationsInput | number
+  uraian?: Prisma.StringFieldUpdateOperationsInput | string
+  fisik?: Prisma.FloatFieldUpdateOperationsInput | number
+  statusAnggaran?: Prisma.EnumStatusAnggaranFieldUpdateOperationsInput | $Enums.StatusAnggaran
+  realLalu?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  realIni?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  realisasi?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  submittedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type LaporanUncheckedUpdateManyWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  kegiatanId?: Prisma.StringFieldUpdateOperationsInput | string
+  periodeBulan?: Prisma.IntFieldUpdateOperationsInput | number
+  periodeTahun?: Prisma.IntFieldUpdateOperationsInput | number
+  uraian?: Prisma.StringFieldUpdateOperationsInput | string
+  fisik?: Prisma.FloatFieldUpdateOperationsInput | number
+  statusAnggaran?: Prisma.EnumStatusAnggaranFieldUpdateOperationsInput | $Enums.StatusAnggaran
+  realLalu?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  realIni?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  realisasi?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  submittedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type LaporanCreateManyKegiatanInput = {
