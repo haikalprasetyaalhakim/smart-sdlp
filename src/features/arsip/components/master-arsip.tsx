@@ -1,59 +1,41 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { fmtRupiah, Icons } from "@/utils/formatters";
-import { deleteLaporan } from "@/features/arsip/actions";
-
-function getPageNumbers(current: number, total: number): (number | "...")[] {
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
-
-  const pages: (number | "...")[] = [1];
-
-  if (current > 3) pages.push("...");
-
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-  for (let i = start; i <= end; i++) pages.push(i);
-
-  if (current < total - 2) pages.push("...");
-
-  pages.push(total);
-
-  return pages;
-}
+import * as XLSX from "xlsx";
+import { Icons } from "@/utils/formatters";
+import { deleteLaporan, ingatkanPJ } from "@/features/arsip/actions";
 
 export interface ArsipItem {
   id: string;
   kegiatanId: string;
+  laporanId: string | null;
   kode: string;
   nama: string;
   periode: string;
   periodeBulan: number;
   periodeTahun: number;
-  tanggal: string;
+  jenis: "APBN" | "NON-APBN";
+  pjNama: string;
+  pjEmail: string;
+  waktuUpload: string;
+  status: "SUDAH_UPLOAD" | "BELUM_UPLOAD";
   pagu: number;
   realisasi: number;
   realIni: number;
   fisik: number;
-  statusAnggaran: "DIBUKA" | "DIBLOKIR";
-  uploader: string;
-  email: string;
-  nip: string;
-  uraian: string;
+  statusAnggaran: string;
+  uraian?: string | null;
 }
 
 interface MasterArsipSMARTPageProps {
   arsipList: ArsipItem[];
   stats: {
-    totalArsip: number;
-    totalKegiatan: number;
-    kegiatanSudahLapor: number;
-    kegiatanBelumLapor: number;
+    total: number;
+    sudah: number;
+    belum: number;
   };
   pagination: {
     page: number;
@@ -66,9 +48,19 @@ interface MasterArsipSMARTPageProps {
     q: string;
     periode: string;
     status: string;
-    sort: string;
-    order: string;
   };
+}
+
+function getPageNumbers(current: number, total: number): (number | "...")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | "...")[] = [1];
+  if (current > 3) pages.push("...");
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (current < total - 2) pages.push("...");
+  pages.push(total);
+  return pages;
 }
 
 export function MasterArsipSMARTPage({
@@ -83,36 +75,38 @@ export function MasterArsipSMARTPage({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const [searchValue, setSearchValue] = useState(currentParams.q);
+  const [searchInput, setSearchInput] = useState(currentParams.q);
+  const [remindingId, setRemindingId] = useState<string | null>(null);
 
   // Deletion Modal
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ArsipItem | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
 
-  const updateQueryParams = (updates: Record<string, string | null>) => {
+  const updateQueryParams = (
+    updates: Record<string, string | number | null>,
+  ) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([key, val]) => {
       if (val === null || val === "" || val === "ALL") {
         params.delete(key);
       } else {
-        params.set(key, val);
+        params.set(key, String(val));
       }
     });
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateQueryParams({ q: searchValue.trim(), page: "1" });
-  };
-
-  const handleSort = (column: string) => {
-    const isCurrentSort = currentParams.sort === column;
-    const nextOrder =
-      isCurrentSort && currentParams.order === "asc" ? "desc" : "asc";
-    updateQueryParams({ sort: column, order: nextOrder, page: "1" });
-  };
+  // Debounced Search Input (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput !== currentParams.q) {
+        updateQueryParams({ q: searchInput.trim() || null, page: 1 });
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
 
   const openDeleteModal = (item: ArsipItem) => {
     setSelectedItem(item);
@@ -121,14 +115,17 @@ export function MasterArsipSMARTPage({
   };
 
   const handleConfirmDelete = () => {
-    if (!selectedItem) return;
+    if (!selectedItem || !selectedItem.laporanId) return;
     if (!deleteReason.trim()) {
       toast.error("Alasan penghapusan wajib diisi.");
       return;
     }
 
     startTransition(async () => {
-      const res = await deleteLaporan(selectedItem.id, deleteReason.trim());
+      const res = await deleteLaporan(
+        selectedItem.laporanId!,
+        deleteReason.trim(),
+      );
       if (res.success) {
         toast.success(
           `Laporan "${selectedItem.nama}" periode ${selectedItem.periode} berhasil dihapus.`,
@@ -142,6 +139,50 @@ export function MasterArsipSMARTPage({
     });
   };
 
+  const handleSendReminder = (item: ArsipItem) => {
+    setRemindingId(item.id);
+    startTransition(async () => {
+      const res = await ingatkanPJ(item.kegiatanId, item.periode);
+      if (res.success) {
+        toast.success(
+          res.message || `Email pengingat berhasil dikirim ke ${item.pjNama}!`,
+        );
+      } else {
+        toast.error(res.error || "Gagal mengirim email pengingat.");
+      }
+      setRemindingId(null);
+    });
+  };
+
+  const handleDownloadExcel = (item: ArsipItem) => {
+    const data = [
+      {
+        "Kode Kegiatan": item.kode,
+        "Nama Kegiatan": item.nama,
+        Periode: item.periode,
+        Jenis: item.jenis,
+        "Penanggung Jawab": item.pjNama,
+        Email: item.pjEmail,
+        "Waktu Upload": item.waktuUpload,
+        "Pagu Anggaran": item.pagu,
+        "Realisasi Bulan Ini": item.realIni,
+        "Total Akumulasi": item.realisasi,
+        "Fisik (%)": item.fisik,
+        Status: item.statusAnggaran,
+        "Uraian / Keterangan": item.uraian || "-",
+      },
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan SMART");
+    XLSX.writeFile(
+      workbook,
+      `Laporan_SMART_${item.kode.replace(/[^a-zA-Z0-9]/g, "_")}_${item.periode.replace(/\s+/g, "_")}.xlsx`,
+    );
+    toast.success(`Mengunduh berkas laporan ${item.kode}`);
+  };
+
   return (
     <div className="space-y-5">
       {/* ── Top Header ── */}
@@ -151,13 +192,13 @@ export function MasterArsipSMARTPage({
             Master Pengarsipan Laporan SMART
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Repositori terpusat berkas & input laporan realisasi SMART yang
-            diinput oleh seluruh PJ Kegiatan
+            Repositori terpusat berkas laporan realisasi SMART yang diunggah
+            oleh seluruh PJ Kegiatan
           </p>
         </div>
         <Link
           href="/admin/log-audit"
-          className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md text-xs font-semibold transition cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-md text-xs font-semibold shadow-xs transition cursor-pointer"
         >
           <svg
             width={14}
@@ -173,55 +214,38 @@ export function MasterArsipSMARTPage({
         </Link>
       </div>
 
-      {/* ── Stats Row ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-        <div className="bg-white p-3.5 rounded-lg border border-slate-200/80 shadow-xs">
+      {/* ── Stats Summary Cards ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="bg-white p-4 rounded-lg border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-            TOTAL LAPORAN MASUK
+            TOTAL ARSIP SMART
           </p>
-          <p className="text-2xl font-black text-slate-800">
-            {stats.totalArsip}
-          </p>
+          <p className="text-2xl font-black text-slate-800">{stats.total}</p>
         </div>
-        <div className="bg-white p-3.5 rounded-lg border border-slate-200/80 shadow-xs">
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-            TOTAL KEGIATAN
-          </p>
-          <p className="text-2xl font-black text-emerald-800">
-            {stats.totalKegiatan}
-          </p>
-        </div>
-        <div className="bg-white p-3.5 rounded-lg border border-slate-200/80 shadow-xs">
+        <div className="bg-white p-4 rounded-lg border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider mb-1">
-            KEGIATAN SUDAH LAPOR
+            SUDAH TERUNGGAH
           </p>
-          <p className="text-2xl font-black text-emerald-600">
-            {stats.kegiatanSudahLapor}
-          </p>
+          <p className="text-2xl font-black text-emerald-600">{stats.sudah}</p>
         </div>
-        <div className="bg-white p-3.5 rounded-lg border border-slate-200/80 shadow-xs">
+        <div className="bg-white p-4 rounded-lg border border-slate-200/80 shadow-xs">
           <p className="text-[11px] font-bold text-rose-700 uppercase tracking-wider mb-1">
-            BELUM LAPOR
+            BELUM DIUNGGAH
           </p>
-          <p className="text-2xl font-black text-rose-600">
-            {stats.kegiatanBelumLapor}
-          </p>
+          <p className="text-2xl font-black text-rose-600">{stats.belum}</p>
         </div>
       </div>
 
-      {/* ── Search & Filter Controls ── */}
+      {/* ── Search & Filter Bar ── */}
       <div className="bg-white rounded-lg border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="relative w-full sm:w-80"
-          >
+          <div className="relative w-full sm:w-80">
             <input
               type="text"
-              placeholder="Cari kode, kegiatan, atau PJ... (Tekan Enter)"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full h-8.5 pl-8 pr-3 text-xs bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-800"
+              placeholder="Cari kode, nama kegiatan, atau pengunggah..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-full pl-9 pr-4 py-1.5 text-xs bg-white border border-slate-300 rounded-md text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700"
             />
             <svg
               width={14}
@@ -229,21 +253,20 @@ export function MasterArsipSMARTPage({
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
-              className="absolute left-2.5 top-2.5 text-slate-400"
+              strokeWidth="2.5"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
+              <path d={Icons.search} />
             </svg>
-          </form>
+          </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <select
               value={currentParams.periode}
               onChange={(e) =>
-                updateQueryParams({ periode: e.target.value, page: "1" })
+                updateQueryParams({ periode: e.target.value, page: 1 })
               }
-              className="h-8.5 px-3 text-xs bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-800 cursor-pointer text-slate-700 font-medium"
+              className="h-8.5 px-3 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-800 cursor-pointer text-slate-700 font-medium"
             >
               <option value="ALL">Semua Periode</option>
               {periodOptions.map((p) => (
@@ -256,176 +279,147 @@ export function MasterArsipSMARTPage({
             <select
               value={currentParams.status}
               onChange={(e) =>
-                updateQueryParams({ status: e.target.value, page: "1" })
+                updateQueryParams({ status: e.target.value, page: 1 })
               }
-              className="h-8.5 px-3 text-xs bg-slate-50 border border-slate-200 rounded-md focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-800 cursor-pointer text-slate-700 font-medium"
+              className="h-8.5 px-3 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-800 cursor-pointer text-slate-700 font-medium"
             >
               <option value="ALL">Semua Status</option>
-              <option value="DIBUKA">Anggaran Dibuka</option>
-              <option value="DIBLOKIR">Anggaran Diblokir</option>
+              <option value="SUDAH_UPLOAD">Sudah Upload</option>
+              <option value="BELUM_UPLOAD">Belum Upload</option>
             </select>
           </div>
         </div>
 
-        {/* ── Table ── */}
+        {/* ── Table Matching Screenshot ── */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                <th
-                  onClick={() => handleSort("kode")}
-                  className="py-3 px-4 cursor-pointer hover:bg-slate-100 transition select-none"
-                >
-                  <div className="flex items-center gap-1">
-                    Kegiatan
-                    {currentParams.sort === "kode" && (
-                      <span>{currentParams.order === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </div>
-                </th>
-                <th
-                  onClick={() => handleSort("createdAt")}
-                  className="py-3 px-4 cursor-pointer hover:bg-slate-100 transition select-none"
-                >
-                  <div className="flex items-center gap-1">
-                    Periode
-                    {currentParams.sort === "createdAt" && (
-                      <span>{currentParams.order === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </div>
-                </th>
-                <th className="py-3 px-4">Penanggung Jawab</th>
-                <th
-                  onClick={() => handleSort("realIni")}
-                  className="py-3 px-4 text-right cursor-pointer hover:bg-slate-100 transition select-none"
-                >
-                  <div className="flex items-center justify-end gap-1">
-                    Realisasi Bulan Ini
-                    {currentParams.sort === "realIni" && (
-                      <span>{currentParams.order === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </div>
-                </th>
-                <th
-                  onClick={() => handleSort("realisasi")}
-                  className="py-3 px-4 text-right cursor-pointer hover:bg-slate-100 transition select-none"
-                >
-                  <div className="flex items-center justify-end gap-1">
-                    Total Akumulasi
-                    {currentParams.sort === "realisasi" && (
-                      <span>{currentParams.order === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </div>
-                </th>
-                <th
-                  onClick={() => handleSort("fisik")}
-                  className="py-3 px-4 text-center cursor-pointer hover:bg-slate-100 transition select-none"
-                >
-                  <div className="flex items-center justify-center gap-1">
-                    Fisik
-                    {currentParams.sort === "fisik" && (
-                      <span>{currentParams.order === "asc" ? "↑" : "↓"}</span>
-                    )}
-                  </div>
-                </th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-center">Aksi</th>
+                <th className="py-3 px-4 w-12 text-center">NO</th>
+                <th className="py-3 px-4">KODE & KEGIATAN</th>
+                <th className="py-3 px-4">PERIODE</th>
+                <th className="py-3 px-4">JENIS</th>
+                <th className="py-3 px-4">PENGUNGGAH (PJ)</th>
+                <th className="py-3 px-4">WAKTU UPLOAD</th>
+                <th className="py-3 px-4 text-center">STATUS</th>
+                <th className="py-3 px-4 text-center">AKSI</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
               {arsipList.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-8 text-center text-slate-400">
-                    Tidak ada arsip laporan yang sesuai kriteria pencarian.
+                    Tidak ada data arsip yang sesuai kriteria pencarian.
                   </td>
                 </tr>
               ) : (
-                arsipList.map((item) => {
-                  const persen =
-                    item.pagu > 0
-                      ? ((item.realisasi / item.pagu) * 100).toFixed(1)
-                      : "0.0";
-                  return (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-slate-50/60 transition"
-                    >
-                      <td className="py-3 px-4">
-                        <div className="font-mono font-bold text-emerald-900">
-                          {item.kode}
-                        </div>
-                        <div
-                          className="font-medium text-slate-800 max-w-xs truncate"
-                          title={item.nama}
-                        >
-                          {item.nama}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                          {item.periode}
+                arsipList.map((item, idx) => (
+                  <tr key={item.id} className="hover:bg-slate-50/60 transition">
+                    <td className="py-3 px-4 text-slate-400 font-semibold text-center">
+                      {(pagination.page - 1) * pagination.pageSize + idx + 1}
+                    </td>
+                    <td className="py-3 px-4 max-w-[280px]">
+                      <span className="font-mono font-bold text-emerald-800 text-[11px] block">
+                        {item.kode}
+                      </span>
+                      <span
+                        className="font-medium text-slate-900 block truncate"
+                        title={item.nama}
+                      >
+                        {item.nama}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap text-slate-700 font-medium">
+                      {item.periode}
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${
+                          item.jenis === "APBN"
+                            ? "bg-sky-50 text-sky-800 border-sky-200"
+                            : "bg-amber-50 text-amber-800 border-amber-200"
+                        }`}
+                      >
+                        {item.jenis}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <div className="font-semibold text-slate-800">
+                        {item.pjNama}
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        {item.pjEmail}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap text-slate-600">
+                      {item.waktuUpload}
+                    </td>
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      {item.status === "SUDAH_UPLOAD" ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          Sudah Upload
                         </span>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
-                          {item.tanggal}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-800">
-                          {item.uploader}
-                        </div>
-                        <div className="text-[10px] text-slate-400 truncate max-w-[150px]">
-                          {item.email}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-medium text-slate-800 whitespace-nowrap">
-                        {fmtRupiah(item.realIni)}
-                      </td>
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <div className="font-mono font-bold text-slate-900">
-                          {fmtRupiah(item.realisasi)}
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-mono">
-                          ({persen}% pagu)
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <span className="font-bold text-slate-800">
-                          {item.fisik}%
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded text-[10.5px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                          Belum Upload
                         </span>
-                      </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        {item.statusAnggaran === "DIBLOKIR" ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                            Diblokir
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            Dibuka
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <button
-                          onClick={() => openDeleteModal(item)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-rose-700 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 rounded transition cursor-pointer"
-                          title="Hapus / Reset Laporan"
-                        >
-                          <svg
-                            width={12}
-                            height={12}
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      {item.status === "SUDAH_UPLOAD" ? (
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => handleDownloadExcel(item)}
+                            className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-slate-100 rounded transition cursor-pointer"
+                            title="Unduh Berkas Laporan (.xlsx)"
                           >
-                            <path d={Icons.trash} />
-                          </svg>
-                          Hapus
+                            <svg
+                              width={14}
+                              height={14}
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path d={Icons.download} />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal(item)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded transition cursor-pointer"
+                            title="Hapus Dokumen Laporan"
+                          >
+                            <svg
+                              width={14}
+                              height={14}
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path d={Icons.trash} />
+                            </svg>
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleSendReminder(item)}
+                          disabled={isPending && remindingId === item.id}
+                          className="px-2.5 py-1 text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-300 hover:bg-amber-100 rounded-md transition cursor-pointer disabled:opacity-50 inline-flex items-center gap-1 shadow-2xs"
+                        >
+                          {isPending && remindingId === item.id ? (
+                            <>
+                              <span className="w-2.5 h-2.5 border-2 border-amber-800/40 border-t-amber-800 rounded-full animate-spin" />
+                              <span>Mengirim...</span>
+                            </>
+                          ) : (
+                            <span>Ingatkan PJ</span>
+                          )}
                         </button>
-                      </td>
-                    </tr>
-                  );
-                })
+                      )}
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -436,16 +430,14 @@ export function MasterArsipSMARTPage({
           <span>
             Menampilkan <b className="text-slate-800">{arsipList.length}</b>{" "}
             dari <b className="text-slate-800">{pagination.total}</b> total
-            arsip laporan
+            berkas
           </span>
 
           {pagination.totalPages > 1 && (
             <div className="flex items-center gap-1">
               <button
                 disabled={pagination.page <= 1}
-                onClick={() =>
-                  updateQueryParams({ page: String(pagination.page - 1) })
-                }
+                onClick={() => updateQueryParams({ page: pagination.page - 1 })}
                 className="px-2.5 py-1.5 text-xs font-semibold rounded-md border border-slate-300 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 cursor-pointer"
                 aria-label="Halaman sebelumnya"
               >
@@ -464,7 +456,7 @@ export function MasterArsipSMARTPage({
                   ) : (
                     <button
                       key={p}
-                      onClick={() => updateQueryParams({ page: String(p) })}
+                      onClick={() => updateQueryParams({ page: p })}
                       className={`min-w-7.5 px-2.5 py-1.5 text-xs font-semibold rounded-md border cursor-pointer transition ${
                         p === pagination.page
                           ? "bg-emerald-800 border-emerald-800 text-white"
@@ -479,9 +471,7 @@ export function MasterArsipSMARTPage({
 
               <button
                 disabled={pagination.page >= pagination.totalPages}
-                onClick={() =>
-                  updateQueryParams({ page: String(pagination.page + 1) })
-                }
+                onClick={() => updateQueryParams({ page: pagination.page + 1 })}
                 className="px-2.5 py-1.5 text-xs font-semibold rounded-md border border-slate-300 bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 cursor-pointer"
                 aria-label="Halaman berikutnya"
               >
@@ -492,10 +482,10 @@ export function MasterArsipSMARTPage({
         </div>
       </div>
 
-      {/* ── Modal Konfirmasi Hapus Laporan ── */}
+      {/* ── Modal Konfirmasi Hapus Laporan dengan Alasan Audit Log ── */}
       {deleteModalOpen && selectedItem && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl border border-slate-200 max-w-md w-full p-5 sm:p-6 space-y-4">
+          <div className="bg-white rounded-lg shadow-xl border border-slate-200 max-w-md w-full p-5 space-y-4 animate-in zoom-in-95 duration-150">
             <div className="flex items-start gap-3 text-rose-600">
               <div className="p-2 bg-rose-100 rounded-full shrink-0">
                 <svg
@@ -511,40 +501,38 @@ export function MasterArsipSMARTPage({
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-800">
-                  Hapus Laporan Arsip SMART?
+                  Hapus Berkas Laporan SMART?
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Tindakan ini akan menghapus data realisasi periode{" "}
-                  <strong>{selectedItem.periode}</strong> untuk kegiatan{" "}
-                  <strong>{selectedItem.kode}</strong> serta dicatat di Log
-                  Audit.
+                  Tindakan ini akan menghapus data laporan periode{" "}
+                  <strong>{selectedItem.periode}</strong> dan dicatat ke dalam
+                  Log Audit Penghapusan.
                 </p>
               </div>
             </div>
 
-            <div className="bg-slate-50 p-3 rounded-md border border-slate-200 text-xs space-y-1">
-              <div className="text-slate-600">
-                <strong>Kegiatan:</strong> {selectedItem.nama}
-              </div>
-              <div className="text-slate-600">
-                <strong>PJ:</strong> {selectedItem.uploader}
-              </div>
-              <div className="text-slate-600">
-                <strong>Realisasi:</strong> {fmtRupiah(selectedItem.realIni)}{" "}
-                (Fisik: {selectedItem.fisik}%)
-              </div>
+            <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-1 text-xs text-slate-700">
+              <p>
+                <strong>Kegiatan:</strong> {selectedItem.kode} -{" "}
+                {selectedItem.nama}
+              </p>
+              <p>
+                <strong>Penanggung Jawab:</strong> {selectedItem.pjNama} (
+                {selectedItem.pjEmail})
+              </p>
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-700">
+              <label className="block text-xs font-bold text-slate-800">
                 Alasan Penghapusan <span className="text-rose-500">*</span>
               </label>
               <textarea
                 rows={3}
+                required
                 value={deleteReason}
                 onChange={(e) => setDeleteReason(e.target.value)}
-                placeholder="Contoh: Kesalahan input nilai SP2D oleh PJ, diminta upload ulang."
-                className="w-full p-2 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-rose-500 text-slate-800"
+                placeholder="Contoh: Salah input data SP2D oleh PJ, perlu perbaikan berkas..."
+                className="w-full p-2.5 text-xs bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-rose-500"
               />
             </div>
 
@@ -561,9 +549,12 @@ export function MasterArsipSMARTPage({
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={isPending || !deleteReason.trim()}
-                className="px-4 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 rounded-md transition cursor-pointer shadow-xs"
+                className="px-4 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 rounded-md transition cursor-pointer shadow-xs inline-flex items-center gap-1.5"
               >
-                {isPending ? "Menghapus..." : "Ya, Hapus Laporan"}
+                {isPending && (
+                  <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                )}
+                {isPending ? "Menghapus..." : "Ya, Hapus & Catat Log"}
               </button>
             </div>
           </div>
