@@ -334,6 +334,23 @@ export type FloatWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
 }
 
+export type EnumKategoriDokumenFilter<$PrismaModel = never> = {
+  equals?: $Enums.KategoriDokumen | Prisma.EnumKategoriDokumenFieldRefInput<$PrismaModel>
+  in?: $Enums.KategoriDokumen[] | Prisma.ListEnumKategoriDokumenFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KategoriDokumen[] | Prisma.ListEnumKategoriDokumenFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKategoriDokumenFilter<$PrismaModel> | $Enums.KategoriDokumen
+}
+
+export type EnumKategoriDokumenWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KategoriDokumen | Prisma.EnumKategoriDokumenFieldRefInput<$PrismaModel>
+  in?: $Enums.KategoriDokumen[] | Prisma.ListEnumKategoriDokumenFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KategoriDokumen[] | Prisma.ListEnumKategoriDokumenFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKategoriDokumenWithAggregatesFilter<$PrismaModel> | $Enums.KategoriDokumen
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKategoriDokumenFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKategoriDokumenFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -654,6 +671,23 @@ export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedFloatFilter<$PrismaModel>
   _min?: Prisma.NestedFloatFilter<$PrismaModel>
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
+}
+
+export type NestedEnumKategoriDokumenFilter<$PrismaModel = never> = {
+  equals?: $Enums.KategoriDokumen | Prisma.EnumKategoriDokumenFieldRefInput<$PrismaModel>
+  in?: $Enums.KategoriDokumen[] | Prisma.ListEnumKategoriDokumenFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KategoriDokumen[] | Prisma.ListEnumKategoriDokumenFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKategoriDokumenFilter<$PrismaModel> | $Enums.KategoriDokumen
+}
+
+export type NestedEnumKategoriDokumenWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.KategoriDokumen | Prisma.EnumKategoriDokumenFieldRefInput<$PrismaModel>
+  in?: $Enums.KategoriDokumen[] | Prisma.ListEnumKategoriDokumenFieldRefInput<$PrismaModel>
+  notIn?: $Enums.KategoriDokumen[] | Prisma.ListEnumKategoriDokumenFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumKategoriDokumenWithAggregatesFilter<$PrismaModel> | $Enums.KategoriDokumen
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumKategoriDokumenFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumKategoriDokumenFilter<$PrismaModel>
 }
 
 

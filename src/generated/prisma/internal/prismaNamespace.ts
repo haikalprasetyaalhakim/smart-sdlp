@@ -403,7 +403,8 @@ export const ModelName = {
   Verification: 'Verification',
   Kegiatan: 'Kegiatan',
   Laporan: 'Laporan',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  Dokumen: 'Dokumen'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -419,7 +420,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "kegiatan" | "laporan" | "auditLog"
+    modelProps: "user" | "session" | "account" | "verification" | "kegiatan" | "laporan" | "auditLog" | "dokumen"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -941,6 +942,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Dokumen: {
+      payload: Prisma.$DokumenPayload<ExtArgs>
+      fields: Prisma.DokumenFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DokumenFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DokumenFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload>
+        }
+        findFirst: {
+          args: Prisma.DokumenFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DokumenFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload>
+        }
+        findMany: {
+          args: Prisma.DokumenFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload>[]
+        }
+        create: {
+          args: Prisma.DokumenCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload>
+        }
+        createMany: {
+          args: Prisma.DokumenCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DokumenCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload>[]
+        }
+        delete: {
+          args: Prisma.DokumenDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload>
+        }
+        update: {
+          args: Prisma.DokumenUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload>
+        }
+        deleteMany: {
+          args: Prisma.DokumenDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DokumenUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DokumenUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload>[]
+        }
+        upsert: {
+          args: Prisma.DokumenUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DokumenPayload>
+        }
+        aggregate: {
+          args: Prisma.DokumenAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDokumen>
+        }
+        groupBy: {
+          args: Prisma.DokumenGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DokumenGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DokumenCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DokumenCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1104,6 +1179,23 @@ export const AuditLogScalarFieldEnum = {
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
+export const DokumenScalarFieldEnum = {
+  id: 'id',
+  nama: 'nama',
+  kategori: 'kategori',
+  fileUrl: 'fileUrl',
+  fileType: 'fileType',
+  ukuran: 'ukuran',
+  tanggal: 'tanggal',
+  kegiatanId: 'kegiatanId',
+  uploaderId: 'uploaderId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DokumenScalarFieldEnum = (typeof DokumenScalarFieldEnum)[keyof typeof DokumenScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1250,6 +1342,20 @@ export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, '
  * Reference to a field of type 'Float[]'
  */
 export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+/**
+ * Reference to a field of type 'KategoriDokumen'
+ */
+export type EnumKategoriDokumenFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KategoriDokumen'>
+    
+
+
+/**
+ * Reference to a field of type 'KategoriDokumen[]'
+ */
+export type ListEnumKategoriDokumenFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KategoriDokumen[]'>
     
 
 /**
@@ -1410,6 +1516,7 @@ export type GlobalOmitConfig = {
   kegiatan?: Prisma.KegiatanOmit
   laporan?: Prisma.LaporanOmit
   auditLog?: Prisma.AuditLogOmit
+  dokumen?: Prisma.DokumenOmit
 }
 
 /* Types for Logging */

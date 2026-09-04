@@ -39,8 +39,9 @@ model User {
   sessions          Session[]
   accounts          Account[]
   kegiatanSebagaiPJ Kegiatan[] @relation("KegiatanPJ")
-  laporans          Laporan[]
   laporanSubmitted  Laporan[]  @relation("LaporanSubmitter")
+  dokumenUploaded   Dokumen[]  @relation("DokumenUploader")
+  laporans          Laporan[]
 
   @@map("user")
 }
@@ -129,6 +130,7 @@ model Kegiatan {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   laporan   Laporan[]
+  dokumen   Dokumen[]
 
   @@index([pjId])
   @@index([kode])
@@ -179,4 +181,38 @@ model AuditLog {
   createdAt    DateTime @default(now())
 
   @@map("audit_log")
+}
+
+enum KategoriDokumen {
+  SK
+  DIPA
+  KONTRAK
+  LAPORAN
+  ESURAT
+  LAINNYA
+
+  @@map("kategori_dokumen")
+}
+
+model Dokumen {
+  id       String          @id @default(cuid())
+  nama     String
+  kategori KategoriDokumen @default(SK)
+  fileUrl  String?
+  fileType String?         @default("pdf")
+  ukuran   String?         @default("1.2 MB")
+  tanggal  DateTime        @default(now())
+
+  kegiatanId String?
+  kegiatan   Kegiatan? @relation(fields: [kegiatanId], references: [id], onDelete: SetNull)
+
+  uploaderId String?
+  uploader   User?   @relation("DokumenUploader", fields: [uploaderId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([kegiatanId])
+  @@index([uploaderId])
+  @@map("dokumen")
 }

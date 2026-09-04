@@ -31,3 +31,15 @@ export const StatusAnggaran = {
 } as const
 
 export type StatusAnggaran = (typeof StatusAnggaran)[keyof typeof StatusAnggaran]
+
+
+export const KategoriDokumen = {
+  SK: 'SK',
+  DIPA: 'DIPA',
+  KONTRAK: 'KONTRAK',
+  LAPORAN: 'LAPORAN',
+  ESURAT: 'ESURAT',
+  LAINNYA: 'LAINNYA'
+} as const
+
+export type KategoriDokumen = (typeof KategoriDokumen)[keyof typeof KategoriDokumen]
