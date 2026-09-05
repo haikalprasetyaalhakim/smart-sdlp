@@ -1,69 +1,74 @@
-import React, { useState } from "react";
-import { allKegiatan } from "@/data/mockData";
-import { fmtRupiah, Icons } from "@/utils/formatters";
+"use client";
+
 import kemEntanLogo from "@/imports/Kementerian_Pertanian_Kementan_Logo.svg";
 import { generateSmartReportExcel, SmartReportItem } from "@/utils/excelExport";
+import { fmtRupiah, Icons } from "@/utils/formatters";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
-export function CetakLaporanPage() {
-  const [periode, setPeriode] = useState("Agustus 2026");
+interface ReportRow {
+  no: number;
+  kode: string;
+  nama: string;
+  jenis: "APBN" | "NON-APBN";
+  pj: string;
+  uraian: string;
+  fisik: number;
+  pagu: number;
+  statusAnggaran: "Dibuka" | "Diblokir";
+  realLalu: number;
+  realIni: number;
+  sdPeriode: number;
+  pctSerapan: number;
+  sisa: number;
+}
+
+interface CetakLaporanPageProps {
+  reportRows: ReportRow[];
+  currentPeriode: string;
+  currentPeriodeLabel: string;
+  monthOptions: { value: string; label: string }[];
+  semesterOptions: { value: string; label: string }[];
+  currentTahun: number;
+}
+
+export function CetakLaporanPage({
+  currentPeriode,
+  currentPeriodeLabel,
+  monthOptions,
+  reportRows,
+  semesterOptions,
+  currentTahun,
+}: CetakLaporanPageProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(true);
-  const [useDualTtd, setUseDualTtd] = useState(false); // Default false = 1 TTD (Kiri Bawah)
+  const [useDualTtd, setUseDualTtd] = useState(false);
   const [extraSpace, setExtraSpace] = useState(true);
 
   // Penanggung Jawab Kegiatan (Kiri - Default & Always Active)
   const [labelPj, setLabelPj] = useState(
-    "Penanggung Jawab Kegiatan / Pembuat Laporan,"
+    "Penanggung Jawab Kegiatan / Pembuat Laporan,",
   );
-  const [namaPj, setNamaPj] = useState("Budi Santoso");
-  const [nipPj, setNipPj] = useState("19820514 200801 1 008");
+  const [namaPj, setNamaPj] = useState("");
+  const [nipPj, setNipPj] = useState("");
   const [jabatanPj, setJabatanPj] = useState("Penanggung Jawab (PJ) Kegiatan");
 
   // Kepala Balai / Verifikator (Kanan - Active only when Dual TTD is checked)
   const [labelAtasan, setLabelAtasan] = useState(
-    "Mengetahui,\nKepala Balai Besar Perakitan dan Modernisasi SD Lahan Pertanian"
+    "Mengetahui,\nKepala Balai Besar Perakitan dan Modernisasi SD Lahan Pertanian",
   );
-  const [namaAtasan, setNamaAtasan] = useState("Dr. Ir. Ahmad Rachman, M.Si.");
-  const [nipAtasan, setNipAtasan] = useState("19650412 199103 1 005");
+  const [namaAtasan, setNamaAtasan] = useState("");
+  const [nipAtasan, setNipAtasan] = useState("");
   const [jabatanAtasan, setJabatanAtasan] = useState("Kepala Balai Besar");
 
-  // Process activity data for 14 columns
-  const reportRows = allKegiatan.map((row, idx) => {
-    const pagu = row.pagu;
-    const realLalu =
-      row.realLalu !== undefined
-        ? row.realLalu
-        : Math.round((row.realisasi || 0) * 0.55);
-    const realIni =
-      row.realIni !== undefined
-        ? row.realIni
-        : Math.round((row.realisasi || 0) * 0.45);
-    const sdPeriode = realLalu + realIni;
-    const pctSerapan = pagu > 0 ? (sdPeriode / pagu) * 100 : 0;
-    const sisa = pagu - sdPeriode;
-    const statusAnggaran = row.statusAnggaran || "Dibuka";
-    const fisik = row.fisik !== undefined ? row.fisik : 75.0;
-    const uraian =
-      row.uraian ||
-      "Realisasi fisik dan output kegiatan tercapai sesuai target TOR/RAB.";
-    const pj = row.pj || "Budi Santoso";
-
-    return {
-      no: idx + 1,
-      kode: row.kode,
-      nama: row.nama,
-      jenis: row.jenis,
-      pj,
-      uraian,
-      fisik,
-      pagu,
-      statusAnggaran,
-      realLalu,
-      realIni,
-      sdPeriode,
-      pctSerapan,
-      sisa,
-    };
-  });
+  const handlePeriodeChange = (value: string) => {
+    const next = new URLSearchParams(searchParams.toString());
+    next.set("periode", value);
+    router.push(`${pathname}?${next.toString()}`);
+  };
 
   const totalPagu = reportRows.reduce((a, b) => a + b.pagu, 0);
   const totalRealLalu = reportRows.reduce((a, b) => a + b.realLalu, 0);
@@ -98,13 +103,13 @@ export function CetakLaporanPage() {
       sisa: r.sisa,
     }));
 
-    const cleanPeriode = periode.toLowerCase().replace(/[^a-z0-9]/g, "");
-    const fileName = `laporan_${cleanPeriode}.xlsx`;
-
+    const cleanPeriode = currentPeriodeLabel
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
     generateSmartReportExcel(
       items,
-      periode,
-      fileName
+      currentPeriodeLabel,
+      `laporan_${cleanPeriode}.xlsx`,
     );
   };
 
@@ -118,14 +123,24 @@ export function CetakLaporanPage() {
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
             <span>Periode:</span>
             <select
-              value={periode}
-              onChange={(e) => setPeriode(e.target.value)}
+              value={currentPeriode}
+              onChange={(e) => handlePeriodeChange(e.target.value)}
               className="h-8 px-2.5 text-xs bg-white border border-slate-300 rounded-md font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#E28B59]"
             >
-              <option>Agustus 2026</option>
-              <option>Juli 2026</option>
-              <option>Juni 2026</option>
-              <option>Semester I 2026</option>
+              <optgroup label="Bulanan">
+                {monthOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Semester">
+                {semesterOptions.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </div>
 
@@ -134,7 +149,8 @@ export function CetakLaporanPage() {
           </span>
 
           <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-[11px] font-medium text-slate-700">
-            Mode TTD: {useDualTtd ? "Dual TTD (2 Kolom)" : "Default (1 TTD Kiri Bawah)"}
+            Mode TTD:{" "}
+            {useDualTtd ? "Dual TTD (2 Kolom)" : "Default (1 TTD Kiri Bawah)"}
           </span>
         </div>
 
@@ -241,9 +257,12 @@ export function CetakLaporanPage() {
                   className="mt-0.5 w-4 h-4 rounded border-amber-400 text-[#E28B59] focus:ring-[#E28B59]"
                 />
                 <div>
-                  <span>Sediakan Ruang Luas untuk TTD &amp; Cap Basah (64px)</span>
+                  <span>
+                    Sediakan Ruang Luas untuk TTD &amp; Cap Basah (64px)
+                  </span>
                   <p className="font-normal text-[11px] text-amber-800/90 mt-0.5">
-                    Memberikan ruang vertikal ekstra untuk pembubuhan stempel dan tanda tangan fisik.
+                    Memberikan ruang vertikal ekstra untuk pembubuhan stempel
+                    dan tanda tangan fisik.
                   </p>
                 </div>
               </label>
@@ -439,10 +458,12 @@ export function CetakLaporanPage() {
                 BADAN STANDARDISASI INSTRUMEN PERTANIAN
               </p>
               <p className="text-[13px] font-bold uppercase tracking-wide text-[#8a441e]">
-                BALAI BESAR PERAKITAN DAN MODERNISASI SUMBER DAYA LAHAN PERTANIAN
+                BALAI BESAR PERAKITAN DAN MODERNISASI SUMBER DAYA LAHAN
+                PERTANIAN
               </p>
               <p className="text-[9px] text-slate-700 mt-0.5">
-                Jl. Tentara Pelajar No. 12, Cimanggu, Kota Bogor 16111 | Telp: (0251) 8321762 | Email: brmp.sdlahan@pertanian.go.id
+                Jl. Tentara Pelajar No. 12, Cimanggu, Kota Bogor 16111 | Telp:
+                (0251) 8321762 | Email: brmp.sdlahan@pertanian.go.id
               </p>
             </div>
           </div>
@@ -457,56 +478,103 @@ export function CetakLaporanPage() {
               LAPORAN REALISASI CAPAIAN DAN ANGGARAN KEGIATAN (SMART)
             </h1>
             <h2 className="text-[11px] font-bold uppercase tracking-wider mt-0.5">
-              TAHUN ANGGARAN 2026
+              TAHUN ANGGARAN {currentTahun}
             </h2>
           </div>
 
           {/* ── Meta Laporan ── */}
           <div className="text-[9.5px] space-y-0.5 mb-2.5">
             <div className="flex">
-              <span className="w-32 text-slate-700 font-medium">Periode Pelaporan</span>
-              <span className="font-semibold text-slate-900">: {periode}</span>
+              <span className="w-32 text-slate-700 font-medium">
+                Periode Pelaporan
+              </span>
+              <span className="font-semibold text-slate-900">
+                : {currentPeriodeLabel}
+              </span>
             </div>
             <div className="flex">
-              <span className="w-32 text-slate-700 font-medium">Satuan Kerja</span>
+              <span className="w-32 text-slate-700 font-medium">
+                Satuan Kerja
+              </span>
               <span className="font-semibold text-slate-900">
-                : Balai Besar Perakitan dan Modernisasi Sumber Daya Lahan Pertanian (BRMP SDLAHAN)
+                : Balai Besar Perakitan dan Modernisasi Sumber Daya Lahan
+                Pertanian (BRMP SDLAHAN)
               </span>
             </div>
           </div>
 
           {/* ── Tabel Laporan Resmi dengan Multi-Row Header & Persentase Lebar Presisi ── */}
           <table className="w-full table-fixed border-collapse border border-black text-[8.5px] leading-tight">
-            <colgroup><col style={{ width: "3%" }} /><col style={{ width: "9%" }} /><col style={{ width: "17%" }} /><col style={{ width: "4.5%" }} /><col style={{ width: "16%" }} /><col style={{ width: "4.5%" }} /><col style={{ width: "8.5%" }} /><col style={{ width: "5%" }} /><col style={{ width: "7.5%" }} /><col style={{ width: "7.5%" }} /><col style={{ width: "7.5%" }} /><col style={{ width: "3.5%" }} /><col style={{ width: "6.5%" }} /></colgroup>
-
+            <colgroup>
+              <col style={{ width: "3%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "17%" }} />
+              <col style={{ width: "4.5%" }} />
+              <col style={{ width: "16%" }} />
+              <col style={{ width: "4.5%" }} />
+              <col style={{ width: "8.5%" }} />
+              <col style={{ width: "5%" }} />
+              <col style={{ width: "7.5%" }} />
+              <col style={{ width: "7.5%" }} />
+              <col style={{ width: "7.5%" }} />
+              <col style={{ width: "3.5%" }} />
+              <col style={{ width: "6.5%" }} />
+            </colgroup>
             <thead>
               {/* Header Row 1 (Cetak Tanpa Kolom PJ) */}
               <tr className="bg-[#E28B59] print:bg-[#E28B59] text-white print:text-black font-bold text-center border-b border-black">
-                <th rowSpan={2} className="border border-black py-1 px-0.5 text-center align-middle font-bold">
+                <th
+                  rowSpan={2}
+                  className="border border-black py-1 px-0.5 text-center align-middle font-bold"
+                >
                   No
                 </th>
-                <th rowSpan={2} className="border border-black py-1 px-1 text-center align-middle font-bold">
+                <th
+                  rowSpan={2}
+                  className="border border-black py-1 px-1 text-center align-middle font-bold"
+                >
                   Kode
                 </th>
-                <th rowSpan={2} className="border border-black py-1 px-1.5 text-center align-middle font-bold">
+                <th
+                  rowSpan={2}
+                  className="border border-black py-1 px-1.5 text-center align-middle font-bold"
+                >
                   Kegiatan
                 </th>
-                <th rowSpan={2} className="border border-black py-1 px-0.5 text-center align-middle font-bold">
+                <th
+                  rowSpan={2}
+                  className="border border-black py-1 px-0.5 text-center align-middle font-bold"
+                >
                   Jenis Kegiatan
                 </th>
-                <th colSpan={2} className="border border-black py-1 px-1 text-center align-middle font-bold">
+                <th
+                  colSpan={2}
+                  className="border border-black py-1 px-1 text-center align-middle font-bold"
+                >
                   Realisasi Capaian Kegiatan
                 </th>
-                <th rowSpan={2} className="border border-black py-1 px-1 text-center align-middle font-bold">
+                <th
+                  rowSpan={2}
+                  className="border border-black py-1 px-1 text-center align-middle font-bold"
+                >
                   Pagu Anggaran
                 </th>
-                <th rowSpan={2} className="border border-black py-1 px-0.5 text-center align-middle font-bold">
+                <th
+                  rowSpan={2}
+                  className="border border-black py-1 px-0.5 text-center align-middle font-bold"
+                >
                   Status Anggaran
                 </th>
-                <th colSpan={4} className="border border-black py-1 px-1 text-center align-middle font-bold">
+                <th
+                  colSpan={4}
+                  className="border border-black py-1 px-1 text-center align-middle font-bold"
+                >
                   Realisasi Anggaran
                 </th>
-                <th rowSpan={2} className="border border-black py-1 px-1 text-center align-middle font-bold">
+                <th
+                  rowSpan={2}
+                  className="border border-black py-1 px-1 text-center align-middle font-bold"
+                >
                   Sisa Anggaran
                 </th>
               </tr>
@@ -594,7 +662,10 @@ export function CetakLaporanPage() {
             {/* Total Summary Footer Row */}
             <tfoot>
               <tr className="bg-slate-100 font-bold border-t-2 border-black text-[8.5px]">
-                <td colSpan={4} className="border border-black py-1 px-1 text-center uppercase tracking-wide">
+                <td
+                  colSpan={4}
+                  className="border border-black py-1 px-1 text-center uppercase tracking-wide"
+                >
                   TOTAL KESELURUHAN
                 </td>
                 <td className="border border-black py-1 px-1 text-left text-[7.5px] font-normal">
@@ -640,11 +711,19 @@ export function CetakLaporanPage() {
                 className="flex flex-col items-center justify-center text-center w-72 break-inside-avoid page-break-inside-avoid print:break-inside-avoid"
                 style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
               >
-                <div className="whitespace-pre-line leading-snug text-center">{labelPj}</div>
+                <div className="whitespace-pre-line leading-snug text-center">
+                  {labelPj}
+                </div>
                 <div className={extraSpace ? "h-16" : "h-12"} />
-                <p className="font-bold underline text-[10.5px] text-center">{namaPj}</p>
+                <p className="font-bold underline text-[10.5px] text-center">
+                  {namaPj}
+                </p>
                 <p className="text-[9.5px] text-center">NIP. {nipPj}</p>
-                {jabatanPj && <p className="text-[9px] text-slate-600 mt-0.5 text-center">{jabatanPj}</p>}
+                {jabatanPj && (
+                  <p className="text-[9px] text-slate-600 mt-0.5 text-center">
+                    {jabatanPj}
+                  </p>
+                )}
               </div>
 
               {/* Kolom Kanan: Kepala Balai / Verifikator */}
@@ -652,11 +731,19 @@ export function CetakLaporanPage() {
                 className="flex flex-col items-center justify-center text-center w-72 break-inside-avoid page-break-inside-avoid print:break-inside-avoid"
                 style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
               >
-                <div className="whitespace-pre-line leading-snug text-center">{labelAtasan}</div>
+                <div className="whitespace-pre-line leading-snug text-center">
+                  {labelAtasan}
+                </div>
                 <div className={extraSpace ? "h-16" : "h-12"} />
-                <p className="font-bold underline text-[10.5px] text-center">{namaAtasan}</p>
+                <p className="font-bold underline text-[10.5px] text-center">
+                  {namaAtasan}
+                </p>
                 <p className="text-[9.5px] text-center">NIP. {nipAtasan}</p>
-                {jabatanAtasan && <p className="text-[9px] text-slate-600 mt-0.5 text-center">{jabatanAtasan}</p>}
+                {jabatanAtasan && (
+                  <p className="text-[9px] text-slate-600 mt-0.5 text-center">
+                    {jabatanAtasan}
+                  </p>
+                )}
               </div>
             </div>
           ) : (
@@ -669,11 +756,19 @@ export function CetakLaporanPage() {
                 className="flex flex-col items-center justify-center text-center w-72 break-inside-avoid page-break-inside-avoid print:break-inside-avoid"
                 style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
               >
-                <div className="whitespace-pre-line leading-snug text-center">{labelPj}</div>
+                <div className="whitespace-pre-line leading-snug text-center">
+                  {labelPj}
+                </div>
                 <div className={extraSpace ? "h-16" : "h-12"} />
-                <p className="font-bold underline text-[10.5px] text-center">{namaPj}</p>
+                <p className="font-bold underline text-[10.5px] text-center">
+                  {namaPj}
+                </p>
                 <p className="text-[9.5px] text-center">NIP. {nipPj}</p>
-                {jabatanPj && <p className="text-[9px] text-slate-600 mt-0.5 text-center">{jabatanPj}</p>}
+                {jabatanPj && (
+                  <p className="text-[9px] text-slate-600 mt-0.5 text-center">
+                    {jabatanPj}
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -681,7 +776,8 @@ export function CetakLaporanPage() {
           {/* ── Footer Dokumen Resmi ── */}
           <div className="border-t border-slate-400 pt-1.5 mt-4 flex items-center justify-between text-[8.5px] text-slate-600">
             <span>
-              Sistem Informasi SMART — BRMP Sumber Daya Lahan Pertanian — Kementerian Pertanian RI
+              Sistem Informasi SMART — BRMP Sumber Daya Lahan Pertanian —
+              Kementerian Pertanian RI
             </span>
             <span className="print-page-number">
               Dokumen Resmi Laporan SMART — BRMP SDLAHAN Kementan RI
