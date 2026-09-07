@@ -9,7 +9,11 @@ export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
 
-  const [rows, laporanRows] = await Promise.all([
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
+  const [rows, laporanRows, laporanBulanIni] = await Promise.all([
     prisma.kegiatan.findMany({
       where: { pjId: session.user.id },
       include: { pj: { select: { id: true, name: true, email: true } } },
@@ -19,7 +23,20 @@ export default async function DashboardPage() {
       where: { kegiatan: { pjId: session.user.id } },
       orderBy: [{ periodeTahun: "desc" }, { periodeBulan: "desc" }],
     }),
+    // Cek spesifik: kegiatan mana yang SUDAH ada laporan untuk BULAN BERJALAN.
+    prisma.laporan.findMany({
+      where: {
+        kegiatan: { pjId: session.user.id },
+        periodeBulan: currentMonth,
+        periodeTahun: currentYear,
+      },
+      select: { kegiatanId: true },
+    }),
   ]);
+
+  const kegiatanSudahLaporBulanIni = new Set(
+    laporanBulanIni.map((l) => l.kegiatanId),
+  );
 
   const activities: Activity[] = rows.map((k) => ({
     id: k.id,
@@ -37,8 +54,10 @@ export default async function DashboardPage() {
     pj: k.pj?.name,
     email: k.pj?.email,
     wajib: k.wajib,
-    sudahLapor: k.sudahLapor,
-    status: k.sudahLapor ? "done" : "pending",
+    // Ganti sumber "sudahLapor" — bukan lagi cache statis, tapi cek nyata
+    // terhadap tabel Laporan untuk bulan berjalan.
+    sudahLapor: kegiatanSudahLaporBulanIni.has(k.id),
+    status: kegiatanSudahLaporBulanIni.has(k.id) ? "done" : "pending",
   }));
 
   const laporanHistory = laporanRows.map((l) => ({

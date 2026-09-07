@@ -391,7 +391,6 @@ export function UserDashboard({
                     <th className="py-2 px-2 text-right">
                       Realisasi Bulan Ini
                     </th>
-                    <th className="py-2 px-2 text-right">Kumulatif</th>
                     <th className="py-2 px-2 text-center">Status</th>
                   </tr>
                 </thead>
@@ -404,9 +403,6 @@ export function UserDashboard({
                       <td className="py-2 px-2 text-center">{l.fisik}%</td>
                       <td className="py-2 px-2 text-right whitespace-nowrap">
                         {fmtRupiah(l.realIni)}
-                      </td>
-                      <td className="py-2 px-2 text-right font-bold text-emerald-800 whitespace-nowrap">
-                        {fmtRupiah(l.realisasi)}
                       </td>
                       <td className="py-2 px-2 text-center">
                         <Badge

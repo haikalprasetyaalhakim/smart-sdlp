@@ -14,6 +14,7 @@ export function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const logoSrc = (kemEntanLogo as any)?.src || kemEntanLogo;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,8 +36,10 @@ export function LoginPage() {
         setError(result.error.message || "Email atau kata sandi tidak valid.");
         return;
       }
-
-      router.push("/");
+      // Full page reload, bukan client-side navigation — memastikan middleware
+      // dan seluruh state (termasuk Router Cache) benar-benar fresh, tidak ada
+      // kemungkinan nyangkut di cache navigasi lama dari sebelum login.
+      window.location.href = "/";
     } catch {
       setError("Terjadi kesalahan. Silakan coba lagi.");
     } finally {

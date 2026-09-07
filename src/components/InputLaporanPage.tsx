@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, useTransition } from "react";
+import React, {
+  useLayoutEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { fmtRupiah, Icons } from "@/utils/formatters";
@@ -28,23 +33,26 @@ type SessionUser = {
   jabatan: string;
 };
 
+type LaporanHistoryItem = {
+  kegiatanId: string;
+  periodeBulan: number;
+  periodeTahun: number;
+  realIni: number;
+  fisik: number;
+  uraian: string;
+};
+
 interface InputLaporanPageProps {
   kegiatanList: KegiatanForInput[];
   initialSelectedKode: string;
   sessionUser: SessionUser;
-  laporanHistory: {
-    kegiatanId: string;
-    periodeBulan: number;
-    periodeTahun: number;
-    realIni: number;
-    fisik: number;
-  }[];
+  laporanHistory: LaporanHistoryItem[];
 }
 
 function generatePeriodeOptions() {
   const now = new Date();
   const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1; // 1-12
+  const currentMonth = now.getMonth() + 1;
   const namaBulan = [
     "Januari",
     "Februari",
@@ -59,7 +67,6 @@ function generatePeriodeOptions() {
     "November",
     "Desember",
   ];
-
   const options: { label: string; bulan: number; tahun: number }[] = [];
   for (let bulan = currentMonth; bulan >= 1; bulan--) {
     options.push({
@@ -70,6 +77,9 @@ function generatePeriodeOptions() {
   }
   return options;
 }
+// CATATAN: dropdown ini cuma mencakup tahun berjalan (Jan s.d. bulan sekarang).
+// Kalau nanti PJ perlu koreksi laporan tahun-tahun sebelumnya, ini perlu
+// diperluas — di luar scope perbaikan sekarang.
 
 export function InputLaporanPage({
   kegiatanList,
@@ -79,7 +89,6 @@ export function InputLaporanPage({
 }: InputLaporanPageProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-
   const [tab, setTab] = useState<"form" | "excel">("form");
 
   const periodeOptions = useMemo(() => generatePeriodeOptions(), []);
@@ -90,70 +99,118 @@ export function InputLaporanPage({
   const activeKegiatan =
     kegiatanList.find((k) => k.kode === selectedKode) ?? kegiatanList[0];
 
-  const [uraian, setUraian] = useState(activeKegiatan.uraian);
-  const [fisik, setFisik] = useState(String(activeKegiatan.fisik));
+  // ── SATU blok perhitungan terpusat untuk kegiatan + periode aktif ───────
+  // Semua angka turunan (narasi kronologis maupun validasi pagu sesungguhnya)
+  // dihitung di sini, dari sumber yang sama, supaya tidak ada 2 tempat yang
+  // bisa punya logika berbeda untuk hal yang sama.
+  const calc = useMemo(() => {
+    const reportsForKegiatan = laporanHistory.filter(
+      (l) => l.kegiatanId === activeKegiatan.id,
+    );
 
-  const priorReports = useMemo(() => {
-    return laporanHistory.filter((l) => {
-      if (l.kegiatanId !== activeKegiatan.id) return false;
-      if (l.periodeTahun !== periode.tahun)
-        return l.periodeTahun < periode.tahun;
-      return l.periodeBulan < periode.bulan;
-    });
+    const isBefore = (bulan: number, tahun: number) =>
+      tahun < periode.tahun ||
+      (tahun === periode.tahun && bulan < periode.bulan);
+    const isSamePeriode = (bulan: number, tahun: number) =>
+      bulan === periode.bulan && tahun === periode.tahun;
+
+    // Narasi kronologis: cuma periode SEBELUM yang sedang dibuka.
+    const priorReports = reportsForKegiatan.filter((l) =>
+      isBefore(l.periodeBulan, l.periodeTahun),
+    );
+    const realLalu = priorReports.reduce((sum, l) => sum + l.realIni, 0);
+    const prevFisik =
+      priorReports.length === 0
+        ? 0
+        : priorReports.reduce((a, b) =>
+            a.periodeTahun !== b.periodeTahun
+              ? a.periodeTahun > b.periodeTahun
+                ? a
+                : b
+              : a.periodeBulan > b.periodeBulan
+                ? a
+                : b,
+          ).fisik;
+
+    // Validasi pagu sesungguhnya: SEMUA periode lain, apa pun urutannya.
+    const otherReports = reportsForKegiatan.filter(
+      (l) => !isSamePeriode(l.periodeBulan, l.periodeTahun),
+    );
+    const totalUsedByOtherPeriods = otherReports.reduce(
+      (sum, l) => sum + l.realIni,
+      0,
+    );
+
+    // Laporan yang sudah tersimpan PERSIS untuk periode ini (mode koreksi).
+    const existingLaporan = reportsForKegiatan.find((l) =>
+      isSamePeriode(l.periodeBulan, l.periodeTahun),
+    );
+
+    return { realLalu, prevFisik, totalUsedByOtherPeriods, existingLaporan };
   }, [activeKegiatan.id, periode, laporanHistory]);
 
-  // Total keseluruhan dari SEMUA periode sebelumnya — dihitung ulang tiap saat,
-  // bukan mengandalkan 1 nilai kumulatif tersimpan yang bisa basi.
-  const realLalu = useMemo(
-    () => priorReports.reduce((sum, l) => sum + l.realIni, 0),
-    [priorReports],
-  );
+  const isBlocked = activeKegiatan.statusAnggaran === "Diblokir";
+  const paguNum = activeKegiatan.pagu;
+  const isFullyAbsorbed =
+    paguNum > 0 && calc.totalUsedByOtherPeriods >= paguNum;
+  const maxAllowedIni = Math.max(0, paguNum - calc.totalUsedByOtherPeriods);
 
-  // Untuk kunci fisik saat diblokir, tetap perlu nilai TERAKHIR (bukan sum,
-  // karena fisik itu persentase kumulatif per laporan, bukan nilai yang dijumlah).
-  const prevFisik = useMemo(() => {
-    if (priorReports.length === 0) return activeKegiatan.fisik;
-    const latest = priorReports.reduce((a, b) =>
-      a.periodeTahun !== b.periodeTahun
-        ? a.periodeTahun > b.periodeTahun
-          ? a
-          : b
-        : a.periodeBulan > b.periodeBulan
-          ? a
-          : b,
-    );
-    return latest.fisik;
-  }, [priorReports, activeKegiatan.fisik]);
+  // ── Form state ───────────────────────────────────────────────────────
+  const [uraian, setUraian] = useState("");
+  const [fisik, setFisik] = useState("0");
+  const [realIni, setRealIni] = useState("0");
 
-  const [realIni, setRealIni] = useState(String(activeKegiatan.realIni));
+  // Sinkronkan form setiap kali kegiatan/periode berubah. useLayoutEffect
+  // (bukan useEffect) supaya nilai lama tidak sempat "berkedip" kelihatan
+  // sebelum dikoreksi ke nilai yang benar untuk kombinasi baru.
+  useLayoutEffect(() => {
+    if (calc.existingLaporan) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setUraian(calc.existingLaporan.uraian);
+      setFisik(
+        isBlocked ? String(calc.prevFisik) : String(calc.existingLaporan.fisik),
+      );
+      setRealIni(
+        isBlocked || isFullyAbsorbed
+          ? "0"
+          : String(calc.existingLaporan.realIni),
+      );
+    } else {
+      setUraian("");
+      setFisik(String(calc.prevFisik));
+      setRealIni("0");
+    }
+  }, [activeKegiatan.id, periode, calc, isBlocked, isFullyAbsorbed]);
 
-  // ── Excel tab state (UI only, belum ada logic parsing sungguhan) ──────────
+  // ── Excel tab (UI only) ──────────────────────────────────────────────
   const [isDragging, setIsDragging] = useState(false);
   const [fileDropped, setFileDropped] = useState<string | null>(null);
-
-  const handleKegiatanSelect = (kode: string) => {
-    setSelectedKode(kode);
-    const target = kegiatanList.find((k) => k.kode === kode);
-    if (target) {
-      setUraian(target.uraian);
-      setFisik(String(target.fisik));
-      setRealIni(String(target.realIni));
-    }
+  const handleFileDrop = (fileName: string) => {
+    setFileDropped(fileName);
+    toast.info(
+      'Fitur baca otomatis file Excel belum tersedia. Silakan gunakan tab "Form Input" untuk mengisi laporan secara manual.',
+    );
   };
 
-  const paguNum = activeKegiatan.pagu;
-  const laluNum = realLalu || 0;
+  // ── Angka turunan untuk tampilan ─────────────────────────────────────
   const iniNum = Number(realIni) || 0;
-  const sdPeriode = laluNum + iniNum;
-  const sisa = paguNum - sdPeriode;
+  const exceedsRemaining = iniNum > maxAllowedIni;
+
+  // Narasi kronologis (tetap "sebelum" saja, sengaja beda dari validasi pagu)
+  const sdPeriode = calc.realLalu + iniNum;
   const pctSd = paguNum > 0 ? ((sdPeriode / paguNum) * 100).toFixed(1) : "0.0";
+
+  // Sisa anggaran SESUNGGUHNYA: pagu dikurangi SEMUA periode lain + input sekarang.
+  const sisaSebenarnya = Math.max(
+    0,
+    paguNum - (calc.totalUsedByOtherPeriods + iniNum),
+  );
 
   const handleSave = () => {
     if (!uraian.trim()) {
       toast.error("Uraian kegiatan wajib diisi.");
       return;
     }
-
     startTransition(async () => {
       const result = await submitLaporan({
         kegiatanId: activeKegiatan.id,
@@ -163,59 +220,16 @@ export function InputLaporanPage({
         fisik: Number(fisik) || 0,
         realIni: iniNum,
       });
-
       if (!result.success) {
         toast.error(`Gagal menyimpan laporan: ${result.error}`);
         return;
       }
-
       toast.success(
         `Laporan realisasi untuk "${activeKegiatan.kode}" periode ${periode.label} berhasil disimpan.`,
       );
       router.refresh();
     });
   };
-
-  const handleFileDrop = (fileName: string) => {
-    setFileDropped(fileName);
-    toast.info(
-      'Fitur baca otomatis file Excel belum tersedia. Silakan gunakan tab "Form Input" untuk mengisi laporan secara manual.',
-    );
-  };
-
-  const isBlocked = activeKegiatan.statusAnggaran === "Diblokir";
-
-  const maxAllowedIni = Math.max(0, paguNum - laluNum);
-  const isFullyAbsorbed = paguNum > 0 && laluNum >= paguNum;
-  const exceedsRemaining = iniNum > maxAllowedIni;
-
-  // Paksa realIni ke 0 setiap kali kegiatan aktif dalam status diblokir
-  useEffect(() => {
-    if (isBlocked) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRealIni("0");
-    }
-  }, [isBlocked, activeKegiatan.id]);
-
-  useEffect(() => {
-    if (isBlocked) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRealIni("0");
-      setFisik(String(prevFisik));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isBlocked, activeKegiatan.id, prevFisik]);
-
-  useEffect(() => {
-    if (isBlocked || isFullyAbsorbed) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRealIni("0");
-    }
-    if (isBlocked) {
-      setFisik(String(prevFisik));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isBlocked, isFullyAbsorbed, activeKegiatan.id, prevFisik]);
 
   return (
     <div className="space-y-5">
@@ -227,39 +241,6 @@ export function InputLaporanPage({
           Formulir pelaporan berkala resmi Kementerian Pertanian
         </p>
       </div>
-
-      <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div>
-          <p className="text-[10px] font-bold text-slate-500 uppercase">
-            Pagu Kegiatan
-          </p>
-          <p className="text-sm font-bold text-slate-900 mt-0.5">
-            {fmtRupiah(activeKegiatan.pagu)}
-          </p>
-        </div>
-        <div>
-          <p className="text-[10px] font-bold text-slate-500 uppercase">
-            Realisasi Total Saat Ini
-          </p>
-          <p className="text-sm font-bold text-emerald-700 mt-0.5">
-            {fmtRupiah(activeKegiatan.realisasi)}
-          </p>
-        </div>
-        <div>
-          <p className="text-[10px] font-bold text-slate-500 uppercase">
-            Sisa Anggaran Saat Ini
-          </p>
-          <p className="text-sm font-bold text-slate-900 mt-0.5">
-            {fmtRupiah(
-              Math.max(0, activeKegiatan.pagu - activeKegiatan.realisasi),
-            )}
-          </p>
-        </div>
-      </div>
-      <p className="text-[10px] text-slate-400 -mt-2">
-        Status ini tetap sama berapa pun periode pelaporan yang dipilih di
-        bawah.
-      </p>
 
       <div className="bg-white rounded-lg border border-slate-200/80 shadow-xs overflow-hidden">
         <div className="flex border-b border-slate-200 bg-slate-50/70 px-4 gap-2">
@@ -288,7 +269,6 @@ export function InputLaporanPage({
           </button>
         </div>
 
-        {/* ── TAB 1: FORM ── */}
         {tab === "form" && (
           <div className="p-5 sm:p-6 space-y-6 max-w-5xl">
             <div className="space-y-3">
@@ -306,6 +286,7 @@ export function InputLaporanPage({
                   bisa mengisi uraian sebagai catatan perkembangan di lapangan.
                 </div>
               )}
+
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                 <div className="sm:col-span-6 space-y-1">
                   <label className="block text-xs font-semibold text-slate-700">
@@ -314,7 +295,7 @@ export function InputLaporanPage({
                   </label>
                   <select
                     value={selectedKode}
-                    onChange={(e) => handleKegiatanSelect(e.target.value)}
+                    onChange={(e) => setSelectedKode(e.target.value)}
                     className="w-full h-9 px-3 text-xs bg-white border border-slate-300 rounded-md font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#E28B59]"
                   >
                     {kegiatanList.map((k) => (
@@ -424,7 +405,7 @@ export function InputLaporanPage({
                   </div>
                   {isBlocked && (
                     <p className="text-[10px] text-slate-500 mt-1">
-                      Terkunci ke {prevFisik}% (nilai periode sebelumnya) —
+                      Terkunci ke {calc.prevFisik}% (nilai periode sebelumnya) —
                       anggaran sedang diblokir.
                     </p>
                   )}
@@ -451,18 +432,15 @@ export function InputLaporanPage({
                     Realisasi Periode Lalu
                   </span>
                   <p className="text-sm font-bold text-slate-800 mt-0.5">
-                    {fmtRupiah(realLalu)}
+                    {fmtRupiah(calc.realLalu)}
                   </p>
                   <p className="text-[10.5px] text-slate-400">
                     Otomatis dari akumulasi laporan periode sebelumnya
+                    (kronologis)
                   </p>
                 </div>
                 <div
-                  className={`space-y-1 p-3 rounded-md border ${
-                    isBlocked || isFullyAbsorbed
-                      ? "bg-slate-100 border-slate-200"
-                      : "bg-amber-50/60 border-amber-200"
-                  }`}
+                  className={`space-y-1 p-3 rounded-md border ${isBlocked || isFullyAbsorbed ? "bg-slate-100 border-slate-200" : "bg-amber-50/60 border-amber-200"}`}
                 >
                   <label className="block text-[10px] font-bold uppercase text-amber-900">
                     Realisasi Periode Ini (Rp){" "}
@@ -484,11 +462,10 @@ export function InputLaporanPage({
                   <p className="text-[10.5px] text-amber-800 font-semibold mt-1">
                     {fmtRupiah(iniNum)}
                   </p>
-
                   {isFullyAbsorbed && !isBlocked && (
                     <p className="text-[10px] text-slate-500 mt-1">
-                      Realisasi sudah mencapai 100% pagu anggaran. Tidak ada
-                      sisa yang bisa diinput.
+                      Pagu sudah terpakai penuh oleh periode lain. Tidak ada
+                      sisa yang bisa diinput di periode ini.
                     </p>
                   )}
                   {isBlocked && (
@@ -521,6 +498,9 @@ export function InputLaporanPage({
                   <p className="text-base font-bold text-emerald-950 mt-1">
                     {fmtRupiah(sdPeriode)}
                   </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    Kronologis: lalu + periode ini
+                  </p>
                 </div>
                 <div className="p-3 bg-white border-2 border-emerald-600/30 rounded-lg shadow-xs">
                   <p className="text-[10px] font-bold text-emerald-800 uppercase">
@@ -535,7 +515,10 @@ export function InputLaporanPage({
                     Sisa Anggaran
                   </p>
                   <p className="text-base font-bold text-slate-900 mt-1">
-                    {fmtRupiah(sisa)}
+                    {fmtRupiah(sisaSebenarnya)}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    Memperhitungkan semua periode lain
                   </p>
                 </div>
               </div>
@@ -561,7 +544,6 @@ export function InputLaporanPage({
           </div>
         )}
 
-        {/* ── TAB 2: EXCEL (UI ONLY, BELUM FUNGSIONAL) ── */}
         {tab === "excel" && (
           <div className="p-5 sm:p-6 space-y-5 max-w-4xl">
             <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2.5">
