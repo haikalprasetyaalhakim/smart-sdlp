@@ -27,6 +27,7 @@ export default async function Page({
         periodeTahun: true,
         realIni: true,
         fisik: true,
+        uraian: true,
       },
     }),
   ]);
@@ -72,6 +73,7 @@ export default async function Page({
     periodeTahun: l.periodeTahun,
     realIni: Number(l.realIni),
     fisik: l.fisik,
+    uraian: l.uraian,
   }));
 
   return (

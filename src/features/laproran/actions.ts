@@ -34,7 +34,6 @@ export async function submitLaporan(
   input: SubmitLaporanInput,
 ): Promise<SubmitLaporanResult> {
   const session = await auth.api.getSession({ headers: await headers() });
-
   if (!session) {
     return { success: false, error: "Sesi tidak valid, silakan login ulang." };
   }
@@ -55,9 +54,7 @@ export async function submitLaporan(
     return { success: false, error: "Kegiatan tidak ditemukan." };
   }
 
-  // Otorisasi PALING DEPAN — sebelum query lain atau validasi bisnis apa pun.
-  // Ini KRUSIAL: tanpa ini, PJ mana pun bisa submit laporan atas nama kegiatan
-  // orang lain sekadar dengan mengubah kegiatanId di request.
+  // Otorisasi PALING DEPAN.
   const isOwner = kegiatan.pjId === session.user.id;
   const isAdmin = session.user.role?.toLowerCase() === "admin";
   if (!isOwner && !isAdmin) {
@@ -67,20 +64,35 @@ export async function submitLaporan(
     };
   }
 
-  const priorLaporan = await prisma.laporan.findFirst({
+  // ── Ambil SEMUA laporan lain milik kegiatan ini (kecuali periode yang
+  // sedang diedit) — satu query, dipakai untuk 2 kebutuhan berbeda:
+  //  1. realLaluServer (narasi kronologis: cuma yang SEBELUM periode ini)
+  //  2. totalUsedByOtherPeriods (validasi pagu: SEMUA periode lain, apa pun urutannya)
+  const allOtherLaporan = await prisma.laporan.findMany({
     where: {
       kegiatanId: data.kegiatanId,
-      OR: [
-        { periodeTahun: { lt: data.periodeTahun } },
-        {
-          periodeTahun: data.periodeTahun,
-          periodeBulan: { lt: data.periodeBulan },
-        },
-      ],
+      NOT: { periodeBulan: data.periodeBulan, periodeTahun: data.periodeTahun },
     },
     orderBy: [{ periodeTahun: "desc" }, { periodeBulan: "desc" }],
   });
 
+  const isBefore = (bulan: number, tahun: number) =>
+    tahun < data.periodeTahun ||
+    (tahun === data.periodeTahun && bulan < data.periodeBulan);
+
+  const priorLaporan = allOtherLaporan.filter((l) =>
+    isBefore(l.periodeBulan, l.periodeTahun),
+  );
+  const realLaluServer = priorLaporan.reduce(
+    (sum, l) => sum + Number(l.realIni),
+    0,
+  );
+  const totalUsedByOtherPeriods = allOtherLaporan.reduce(
+    (sum, l) => sum + Number(l.realIni),
+    0,
+  );
+
+  // ── Validasi status Diblokir ─────────────────────────────────────────
   if (kegiatan.statusAnggaran === "DIBLOKIR") {
     if (data.realIni !== 0) {
       return {
@@ -89,7 +101,7 @@ export async function submitLaporan(
           "Anggaran kegiatan ini sedang diblokir, realisasi periode ini harus 0.",
       };
     }
-    const maxFisik = priorLaporan?.fisik ?? kegiatan.fisik ?? 0;
+    const maxFisik = priorLaporan[0]?.fisik ?? 0; // sudah terurut desc, [0] = paling baru
     if (data.fisik > maxFisik) {
       return {
         success: false,
@@ -98,35 +110,21 @@ export async function submitLaporan(
     }
   }
 
-  const priorAgg = await prisma.laporan.aggregate({
-    where: {
-      kegiatanId: data.kegiatanId,
-      OR: [
-        { periodeTahun: { lt: data.periodeTahun } },
-        {
-          periodeTahun: data.periodeTahun,
-          periodeBulan: { lt: data.periodeBulan },
-        },
-      ],
-    },
-    _sum: { realIni: true },
-  });
-  const realLaluServer = Number(priorAgg._sum.realIni ?? 0);
-
-  const totalIfSubmitted = BigInt(realLaluServer) + BigInt(data.realIni);
-
+  // ── Validasi batas pagu — pakai TOTAL dari semua periode lain,
+  // bukan cuma yang sebelumnya, supaya tidak bisa disisipkan lewat bulan lampau.
+  const totalIfSubmitted =
+    BigInt(totalUsedByOtherPeriods) + BigInt(data.realIni);
   if (totalIfSubmitted > kegiatan.pagu) {
-    const sisaRaw = kegiatan.pagu - BigInt(realLaluServer);
+    const sisaRaw = kegiatan.pagu - BigInt(totalUsedByOtherPeriods);
     const sisa = sisaRaw > BigInt(0) ? sisaRaw : BigInt(0);
     const sisaFormatted = new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       maximumFractionDigits: 0,
     }).format(Number(sisa));
-
     return {
       success: false,
-      error: `Realisasi periode ini melebihi sisa anggaran. Sisa anggaran tersedia: ${sisaFormatted}.`,
+      error: `Total realisasi seluruh periode melebihi pagu. Sisa jatah yang tersedia (di luar periode ini): ${sisaFormatted}.`,
     };
   }
 
@@ -147,7 +145,7 @@ export async function submitLaporan(
         periodeTahun: data.periodeTahun,
         uraian: data.uraian,
         fisik: data.fisik,
-        statusAnggaran: kegiatan.statusAnggaran, // snapshot dari Kegiatan, bukan input PJ
+        statusAnggaran: kegiatan.statusAnggaran,
         realLalu: BigInt(realLaluServer),
         realIni: BigInt(data.realIni),
         realisasi: BigInt(realisasi),
@@ -156,7 +154,7 @@ export async function submitLaporan(
       update: {
         uraian: data.uraian,
         fisik: data.fisik,
-        statusAnggaran: kegiatan.statusAnggaran, // snapshot ulang juga saat koreksi laporan
+        statusAnggaran: kegiatan.statusAnggaran,
         realLalu: BigInt(realLaluServer),
         realIni: BigInt(data.realIni),
         realisasi: BigInt(realisasi),
@@ -164,16 +162,31 @@ export async function submitLaporan(
       },
     });
 
-    // Sinkron cache Kegiatan — TIDAK menyentuh statusAnggaran lagi,
-    // itu murni domain admin sekarang.
+    // ── Hitung ulang cache Kegiatan dari SEMUA laporan yang ada, BUKAN cuma
+    // dari sudut pandang periode yang baru disubmit. Ini krusial kalau PJ
+    // submit tidak berurutan kronologis (misal isi Mei duluan, baru April
+    // menyusul) — cache harus tetap mencerminkan TOTAL sesungguhnya dan
+    // progres fisik dari periode yang PALING BARU secara kalender, bukan
+    // dari submission yang paling terakhir dilakukan.
+    const allLaporanForKegiatan = await tx.laporan.findMany({
+      where: { kegiatanId: data.kegiatanId },
+      orderBy: [{ periodeTahun: "desc" }, { periodeBulan: "desc" }],
+    });
+
+    const totalRealisasi = allLaporanForKegiatan.reduce(
+      (sum, l) => sum + l.realIni,
+      BigInt(0),
+    );
+    const latestChronological = allLaporanForKegiatan[0]; // sudah terurut desc
+
     await tx.kegiatan.update({
       where: { id: data.kegiatanId },
       data: {
-        uraian: data.uraian,
-        fisik: data.fisik,
-        realLalu: BigInt(realLaluServer),
-        realIni: BigInt(data.realIni),
-        realisasi: BigInt(realisasi),
+        uraian: latestChronological.uraian,
+        fisik: latestChronological.fisik,
+        realLalu: totalRealisasi - latestChronological.realIni,
+        realIni: latestChronological.realIni,
+        realisasi: totalRealisasi,
         sudahLapor: true,
       },
     });

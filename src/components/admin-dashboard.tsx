@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Activity } from "@/types";
-import { fmtRupiah, Icons } from "@/utils/formatters";
+import { fmtRupiah, formatRupiahSingkat, Icons } from "@/utils/formatters";
 import { KpiCard, Badge, ProgressBar } from "./KpiCard";
 import { Top5LowSerapanWidget } from "./Top5LowSerapanWidget";
 import { DistribusiPaguWidget } from "./DistribusiPaguWidget";
@@ -216,7 +216,7 @@ export function AdminDashboard({
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={barData}
-                      margin={{ top: 24, right: 16, left: -10, bottom: 0 }}
+                      margin={{ top: 24, right: 16, left: 10, bottom: 0 }}
                     >
                       <CartesianGrid
                         strokeDasharray="3 3"
@@ -232,13 +232,23 @@ export function AdminDashboard({
                       <YAxis
                         domain={[
                           0,
-                          (dataMax: number) =>
-                            Math.ceil((dataMax * 1.25) / 500000000) * 500000000,
+                          (dataMax: number) => {
+                            if (dataMax === 0) return 100; // fallback kalau semua data kosong
+                            // Bulatkan ke atas ke "angka bulat" yang proporsional dengan skala
+                            // data sebenarnya — bukan dipaksa kelipatan 500 juta yang cuma cocok
+                            // untuk data skala miliaran.
+                            const target = dataMax * 1.25;
+                            const magnitude = Math.pow(
+                              10,
+                              Math.floor(Math.log10(target)),
+                            );
+                            return Math.ceil(target / magnitude) * magnitude;
+                          },
                         ]}
                         tick={{ fontSize: 11, fill: "#475569" }}
                         axisLine={false}
                         tickLine={false}
-                        tickFormatter={(v) => `${(v / 1e9).toFixed(1)}M`}
+                        tickFormatter={(v) => formatRupiahSingkat(v)}
                       />
                       <Tooltip
                         formatter={(val) => [fmtRupiah(Number(val)), ""]}
